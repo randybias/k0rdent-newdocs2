@@ -8,7 +8,7 @@ Upgrading k0rdent involves making upgrades to the `Management` object. To do tha
     available versions at [https://github.com/k0rdent/kcm/releases](https://github.com/k0rdent/kcm/releases).  The actual
     `Release` object includes information on the templates and resources that are available, as well as the version of the
     Kubernetes Cluster API.  For example, the v0.0.7 `Release` object looks like this:
-    
+
     ```yaml
     apiVersion: k0rdent.mirantis.com/v1alpha1
     kind: Release
@@ -53,6 +53,7 @@ Upgrading k0rdent involves making upgrades to the `Management` object. To do tha
     ```shell
     kubectl get releases
     ```
+
     ```console
     NAME        AGE
     kcm-0-0-6   71m
@@ -71,10 +72,10 @@ Upgrading k0rdent involves making upgrades to the `Management` object. To do tha
 4. Verify the Upgrade
 
     Although the change will be made immediately, it will take some time for k0rdent to update the components it should be
-    using.  Monitor the readiness of the components to ensure the upgrade was successful by checking the status of the `Management` object:
+    using. Monitor the readiness of the `Management` object to ensure the upgrade was successful. For example:
 
     ```shell
-    kubectl get management.kcm kcm -o=jsonpath={.status} | jq
+    kubeclt get management.kcm kcm
+    NAME   READY   RELEASE     AGE
+    kcm    True    kcm-0-0-7   4m34s
     ```
-
-    The output will display the status of the `Management` object so you can see whether the upgrade completed successfully.
