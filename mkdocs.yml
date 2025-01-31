@@ -48,10 +48,8 @@ plugins:
       j2_variable_end_string: "}}}"
   - exclude:
       glob:
-        - "*.etag"
-        - Dockerfile.serve-dev
+        - Dockerfile*
         - Makefile*
-        - requirements_pip.txt
         - requirements.txt
 
 nav:
@@ -100,10 +98,11 @@ nav:
     - Cloud provider credentials management in CAPI: appendix-providers.md
 
 markdown_extensions:
+  - nl2br
+  - admonition
   - tables
   - pymdownx.details
   - pymdownx.highlight: {}
-  - pymdownx.superfences: {}
   - pymdownx.inlinehilite: {}
   - pymdownx.superfences:
       custom_fences:
