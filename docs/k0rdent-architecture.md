@@ -6,7 +6,7 @@ The key principles of the architecture include:
 
 * Leverage Kubernetes core principles
 * Highly aligned but loosely coupled architecture
-* Plugable and extensible architecture
+* Pluggable and extensible architecture
 * Template driven approach for repeatability
 * Standards driven API
 * Leverage unmodified upstream components (e.g.CAPI)
@@ -33,7 +33,7 @@ Let’s look at each of these in more detail.
 
 ## Management cluster
 
-The management cluster is the core of the k0rdent architecture. It hosts all of the controllers needed to make k0rdent’s work. This includes:
+The management cluster is the core of the k0rdent architecture. It hosts all of the controllers needed to make k0rdent work. This includes:
 
 * **k0rdent Cluster Manager (KCM) Controller:**  KCM provides a wrapper for k0rdent’s CAPI-related capabilities. It orchestrates:
     * **Cluster API (CAPI) Controllers:** CAPI controllers are designed to work with specific infrastructure providers. For example, one CAPI controller will manage the creation and lifecycle of Kubernetes clusters running on Amazon Web Services, while another manages those on Azure. It’s also possible to create custom CAPI controllers to integrate with internal systems.
