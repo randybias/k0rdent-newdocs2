@@ -1,6 +1,6 @@
 # QuckStart 1 - Set up Management Node and Cluster
 
-Please review the [Guide to QuickStarts](guide-to-quickstarts.md) for preliminaries. This QuickStart unit details setting up a single-VM environment for managing and interacting with k0rdent, and for hosting k0rdent components on a single-node local Kubernetes management cluster. Once k0rdent is installed on the management cluster, you can drive k0rdent by SSHing into the management node (kubectl is there and will be provisioned with the appropriate kubeconfig) or remotely by various means (e.g., install the management cluster kubeconfig in Lens or another Kubernetes dashboard on your laptop, tunnel across from your own local kubectl, etc.)
+Please review the [Guide to QuickStarts](guide-to-quickstarts.md) for preliminaries. This QuickStart unit details setting up a single-VM environment for managing and interacting with k0rdent, and for hosting k0rdent components on a single-node local Kubernetes management cluster. Once k0rdent is installed on the management cluster, you can drive k0rdent by SSHing into the management node (kubectl is there and will be provisioned with the appropriate kubeconfig) or remotely by various means (for example, install the management cluster kubeconfig in Lens or another Kubernetes dashboard on your laptop, tunnel across from your own local kubectl, and so on).
 
 ## Install a single-node k0s cluster locally to work as k0rdent's management cluster
 
@@ -50,7 +50,7 @@ sudo chmod +r KUBECONFIG
 export KUBECONFIG=./KUBECONFIG
 ```
 
-At this point, your newly-installed kubectl should be able to interoperate with the k0s management cluster with administrative privileges. Test to see that the cluster is ready (usually takes about one minute):
+At this point, your newly-installed kubectl should be able to interoperate with the k0s management cluster with administrative privileges. Test to see that the cluster is ready (this usually takes about one minute):
 
 ```shell
 kubectl get nodes
@@ -109,7 +109,7 @@ k0rdent startup takes several minutes.
 
 ## Check that k0rdent cluster management pods are running
 
-One fundamental k0rdent subsystem, k0rdent Cluster Manager (KCM), handles cluster lifecycle management on clouds and infrastructures: i.e., it helps you configure and compose clusters and manages infrastructure via Cluster API (CAPI). Before continuing, check that KCM pods are ready:
+One fundamental k0rdent subsystem, k0rdent Cluster Manager (KCM), handles cluster lifecycle management on clouds and infrastructures: for example, it helps you configure and compose clusters and manages infrastructure via Cluster API (CAPI). Before continuing, check that the KCM pods are ready:
 
 ```shell
 kubectl get pods -n kcm-system   # check pods in the kcm-system namespace
@@ -140,7 +140,7 @@ Pods reported in states other than Running should become ready momentarily.
 
 ## Check that the projectsveltos pods are running
 
-The other fundamental k0rdent subsystem, k0rdent Service Manager (KSM), handles services configuration and lifecycle management on clusters. This utilizes the [projectsveltos](https://github.com/projectsveltos) Kubernetes Add-On Controller and other open source projects. Before continuing, check that KSM pods are ready:
+The other fundamental k0rdent subsystem, k0rdent State Manager (KSM), handles services configuration and lifecycle management on clusters. This utilizes the [projectsveltos](https://github.com/projectsveltos) Kubernetes Add-On Controller and other open source projects. Before continuing, check that the ksm pods are ready:
 
 ```shell
 kubectl get pods -n projectsveltos   # check pods in the projectsveltos namespace
@@ -161,59 +161,75 @@ shard-controller-767975966-v5qqn         1/1     Running   0          16m
 sveltos-agent-manager-56bbf5fb94-9lskd   1/1     Running   0          15m
 ```
 
-If you have fewer pods than shown above, just wait a little while for all the pods to reconcile and start running.
+If you have fewer pods than shown above, just wait 5 minutes or so for all the pods to reconcile and start running.
+
+## Verify that k0rdent itself is ready
+
+The actual measure of whether k0rdent is ready is the state of the `Management` object. To check, issue this command:
+
+```shell
+kubectl get Management -n kcm-system
+```
+```console
+NAME   READY   RELEASE     AGE
+kcm    True    kcm-0-1-0   9m
+```
 
 ## Verify that KCM provider and related templates are available
 
-k0rdent KCM leverages CAPI to manage Kubernetes cluster assembly and host infrastructure. CAPI requires infrastructure providers for different clouds and infrastructure types. These are delivered and referenced within k0rdent using templates, instantiated in the management cluster as objects. Before continuing, verify that default provider template objects are installed and verified. Other templates are also stored as provider templates in this namespace &mdash; for example, the templates that determine setup of KCM itself and other parts of the k0rdent system (e.g., projectsveltos, which is a component of k0rdent Service Manager (KSM, see below)) as well as the k0smotron subsystem, which enables creation and lifecycle management of managed clusters that use Kubernetes-hosted control planes (i.e., control planes as pods):
+k0rdent KCM leverages CAPI to manage Kubernetes cluster assembly and host infrastructure. CAPI requires infrastructure providers for different clouds and infrastructure types. These are delivered and referenced within k0rdent using templates, instantiated in the management cluster as objects. Before continuing, verify that the default provider template objects are installed and verified. Other templates are also stored as provider templates in this namespace (for example, the templates that determine setup of KCM itself and other parts of the k0rdent system, such as projectsveltos, which is a component of k0rdent Service Manager (KSM, see below)) as well as the k0smotron subsystem, which enables creation and lifecycle management of managed clusters that use Kubernetes-hosted control planes (such as control planes as pods):
 
 ```shell
 kubectl get providertemplate -n kcm-system   # list providertemplate objects in the kcm-system namespace
 ```
 
-You should see output similar to what's shown below. The placeholder X-Y-Z represents the current version number of the template, and will be replaced in the listing with digits:
+You should see output similar to:
 
 ```console
-NAME                                 VALID
-cluster-api-X-Y-Z                    true
-cluster-api-provider-aws-X-Y-Z       true
-cluster-api-provider-azure-X-Y-Z     true
-cluster-api-provider-vsphere-X-Y-Z   true
-kcm-X-Y-Z                            true
-k0smotron-X-Y-Z                      true
-projectsveltos-X-Y-Z                 true
+NAME                                   VALID
+cluster-api-0-1-0                      true
+cluster-api-provider-aws-0-1-0         true
+cluster-api-provider-azure-0-1-0       true
+cluster-api-provider-openstack-0-1-0   true
+cluster-api-provider-vsphere-0-1-0     true
+k0smotron-0-1-0                        true
+kcm-0-1-0                              true
+projectsveltos-0-45-0                  true
 ```
 
 ## Verify that KCM ClusterTemplate objects are available
 
-CAPI also requires control plane and bootstrap (worker node) providers to construct and/or manage different Kubernetes cluster distros and variants. Again, these providers are delivered and referenced within k0rdent using templates, instantiated in the management cluster as `ClusterTemplate` objects. Before continuing, verify that default ClusterTemplate objects are installed and verified:
+CAPI also requires control plane and bootstrap (worker node) providers to construct and/or manage different Kubernetes cluster distros and variants. Again, these providers are delivered and referenced within k0rdent using templates, instantiated in the management cluster as `ClusterTemplate` objects. Before continuing, verify that default ClusterTemplate objects are installed and valid:
 
 ```shell
 kubectl get clustertemplate -n kcm-system   # list clustertemplate objects in the kcm-system namespace
 ```
 
-You should see output similar to what's shown below:
+You should see output similar to:
 
 ```console
-NAME                                VALID
-aws-eks-X-Y-Z                       true
-aws-hosted-cp-X-Y-Z                 true
-aws-standalone-cp-X-Y-Z             true
-azure-hosted-cp-X-Y-Z               true
-azure-standalone-cp-X-Y-Z           true
-vsphere-hosted-cp-X-Y-Z             true
-vsphere-standalone-cp-X-Y-Z         true
+NAME                            VALID
+adopted-cluster-0-1-0           true
+aws-eks-0-1-0                   true
+aws-hosted-cp-0-1-0             true
+aws-standalone-cp-0-1-0         true
+azure-aks-0-1-0                 true
+azure-hosted-cp-0-1-0           true
+azure-standalone-cp-0-1-0       true
+openstack-standalone-cp-0-1-0   true
+vsphere-hosted-cp-0-1-0         true
+vsphere-standalone-cp-0-1-0     true
 ```
 
 ## Verify that KSM ServiceTemplate objects are available
 
-k0rdent Service Manager (KSM) uses Service Templates to lifecycle manage services and applications installed on clusters. These, too, are represented as declarative templates, instantiated as ServiceTemplate objects. Check that default ServiceTemplate objects have been created and validated:
+k0rdent Service Manager (KSM) uses Service Templates to lifecycle manage services and applications installed on clusters. These, too, are represented as declarative templates, instantiated as `ServiceTemplate` objects. Check that default `ServiceTemplate` objects have been created and validated:
 
 ```shell
 kubectl get servicetemplate -n kcm-system   # list servicetemplate objects in the kcm-system namespace
 ```
 
-You should see output similar to what's shown below:
+You should see output similar to:
 
 ```console
 NAME                      VALID

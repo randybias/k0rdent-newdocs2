@@ -1,1 +1,0 @@
-1) Images not appearing in k0rdent-architecture.md
