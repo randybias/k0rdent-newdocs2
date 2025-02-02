@@ -310,7 +310,7 @@ metadata:
   name: my-aws-clusterdeployment1
   namespace: kcm-system
 spec:
-  template: aws-standalone-cp-0-0-5
+  template: aws-standalone-cp-0-1-0
   credential: aws-cluster-identity-cred
   config:
     clusterLabels: {}
