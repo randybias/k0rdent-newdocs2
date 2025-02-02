@@ -8,7 +8,11 @@ The process of installing k0rdent is straightforward, and involves the following
 
 ## Create and prepare the Management Kubernetes cluster
 
-The first step is to create the Kubernetes cluster.
+The first step is to create the Kubernetes cluster. You should have the following installed:
+
+* Kubernetes
+* Helm
+* kubectl
 
 ### CNCF-certified Kubernetes
 
@@ -24,7 +28,7 @@ k0rdent management clusters can also be mixed-use. For example, a cloud Kubernet
 
 ### Where k0rdent management clusters can live
 
-k0rdent management clusters can live anywhere. Unlike prior generations of Kubernetes cluster managers, there's no technical need to co-locate a k0rdent manager with managed clusters on a single infrastructure. k0rdent provides a single point of control and visibility across any cloud, any infrastructure, anywhere, on-premise or off. Deciding where to put a management cluster (or multiple clusters) is best done by assessing the requirements of your use case. Considered in the abstract, a k0rdent management cluster should be:
+k0rdent management clusters can live anywhere. Unlike prior generations of Kubernetes cluster managers, there's no technical need to co-locate a k0rdent manager with child clusters on a single infrastructure. k0rdent provides a single point of control and visibility across any cloud, any infrastructure, anywhere, on-premise or off. Deciding where to put a management cluster (or multiple clusters) is best done by assessing the requirements of your use case. Considered in the abstract, a k0rdent management cluster should be:
 
 * Resilient and available
 * Accessible and secure
@@ -38,29 +42,28 @@ k0rdent management clusters can live anywhere. Unlike prior generations of Kuber
 
 There isn't a strict minimum system requirement for k0rdent, but the following are recommended for a single node:
 
-* A minimum of 32GB RAM
-* 8 cores
+* A minimum of 8 GB RAM
+* 4 CPU
 * 100GB SSD
 
 This configuration is only sufficient for the base case.  If you will run k0rdent Observability and FinOps (KOF) you will need significantly more resources and in particular, much more storage.
 
 ### Recommended requirements for single-node k0rdent management clusters for production
 
-We do not recommend running k0rdent in production on a single node.  If you are running in production you will want a scale-out architecture.  These documents do not currently cover this case.
+We do not recommend running k0rdent in production on a single node.  If you are running in production you will want a scale-out architecture.  These documents do not yet cover this case, but the general Kubernetes administration principles apply.
 
 > IMPORTANT:
 > Detailed instructions for deploying k0rdent management clusters into a multi-node configuration and scaling them as needed are COMING SOON!
 
 ## Install k0rdent
 
-This assumes that you already have a kubernetes cluster installed, if you need to setup a cluster you can follow the [Create and prepare a Kubernetes cluster with k0s](#create-and-prepare-a-kubernetes-cluster-with-k0s) guide
+This section assumes that you already have a kubernetes cluster installed. If you need to setup a cluster you can follow the [Create and prepare a Kubernetes cluster with k0s](#create-and-prepare-a-kubernetes-cluster-with-k0s) guide.
 
 The actual management cluster is a Kubernetes cluster with the k0rdent application installed. The simplest way to install k0rdent is through its Helm chart.  You can find the latest release [here](https://github.com/k0rdent/kcm/tags), and from there you can deploy the Helm chart, as in:
 
 ```shell
 helm install kcm oci://ghcr.io/k0rdent/kcm/charts/kcm --version 0.1.0 -n kcm-system --create-namespace
 ```
-
 ```console
 Pulled: ghcr.io/k0rdent/kcm/charts/kcm:0.1.0
 Digest: sha256:1f75e8e55c44d10381d7b539454c63b751f9a2ec6c663e2ab118d34c5a21087f
@@ -75,7 +78,7 @@ TEST SUITE: None
 > NOTE:
 > Make sure to specify the correct release version number.
 
-The helm chart deploys the KCM operator and prepares the environment, KCM then proceeds to deploy the various sub components, including CAPI, the entire process takes a few minutes.
+The helm chart deploys the KCM operator and prepares the environment, and KCM then proceeds to deploy the various subcomponents, including CAPI. The entire process takes a few minutes.
 
 ## Confirming the deployment
 
@@ -84,10 +87,9 @@ To understand whether installation is complete, start by making sure all pods ar
 ```shell
 kubectl get pods -n kcm-system
 ```
-
 ```console
 NAME                                                          READY   STATUS    RESTARTS   AGE
-azureserviceoperator-controller-manager-6b4dd86894-2m2wh      0/1     Running   0          57s
+azureserviceoperator-controller-manager-6b4dd86894-2m2wh      1/1     Running   0          57s
 capa-controller-manager-64bbcb9f8-kx6wr                       1/1     Running   0          2m3s
 capi-controller-manager-66f8998ff5-2m5m2                      1/1     Running   0          2m32s
 capo-controller-manager-588f45c7cf-lmkgz                      1/1     Running   0          50s
@@ -116,7 +118,7 @@ kubectl get pods -n projectsveltos
 AME                                     READY   STATUS      RESTARTS   AGE
 access-manager-56696cc7f-5txlb           1/1     Running     0          4m1s
 addon-controller-7c98776c79-dn9jm        1/1     Running     0          4m1s
-classifier-manager-7b85f96469-666jx       1/1     Running     0          4m1s
+classifier-manager-7b85f96469-666jx      1/1     Running     0          4m1s
 event-manager-67f6db7f44-hsnnj           1/1     Running     0          4m1s
 hc-manager-6d579d675f-fgvk2              1/1     Running     0          4m1s
 register-mgmt-cluster-job-rfkdh          0/1     Completed   0          4m1s
@@ -133,7 +135,21 @@ kubectl describe pod classifier-manager-7b85f96469-666jx -n projectsveltos
 
 As long as you're not seeing pod restarts, you just need to wait a few minutes.
 
-Next verify whether the kcm templates have been successfully installed and reconciled.  Start with the `ProviderTemplate` objects:
+## Verify that k0rdent itself is ready
+
+The actual measure of whether k0rdent is ready is the state of the `Management` object. To check, issue this command:
+
+```shell
+kubectl get Management -n kcm-system
+```
+```console
+NAME   READY   RELEASE     AGE
+kcm    True    kcm-0-1-0   9m
+```
+
+## Verify the templates
+
+Next verify whether the KCM templates have been successfully installed and reconciled.  Start with the `ProviderTemplate` objects:
 
 ```shell
 kubectl get providertemplate -n kcm-system
@@ -192,11 +208,12 @@ velero-8-1-0              true
 
 ## Backing up a k0rdent management cluster
 
-In a production environment, you will always want to ensure that your management cluster is backed up. There are a few caveats and things you need to take into account when backing up k0rdent more info can be found in the guid at [use Velero as a backup provider](admin-backup.md).
+In a production environment, you will always want to ensure that your management cluster is backed up. There are a few caveats and things you need to take into account when backing up k0rdent. More info can be found in the guide at [use Velero as a backup provider](admin-backup.md).
 
-### Create and prepare a Kubernetes cluster with k0s
 
-follow these steps to install and prepare a [k0s kubernetes](https://k0sproject.io) management cluster:
+## Create and prepare a Kubernetes cluster with k0s
+
+Follow these steps to install and prepare a [k0s kubernetes](https://k0sproject.io) management cluster:
 
 1. Deploy a Kubernetes cluster
 
@@ -272,3 +289,4 @@ follow these steps to install and prepare a [k0s kubernetes](https://k0sproject.
     ```
 
     Helm will be installed into `/usr/local/bin/helm`
+
