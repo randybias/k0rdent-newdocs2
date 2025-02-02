@@ -1,9 +1,25 @@
 # k0rdent architecture
 
-The k0rdent architecture follows a declarative approach to cluster management using the principles of Kubernetes Cluster API (CAPI), where you define the state you want using YAML and CAPI ensures you get it. For example, if you wanted to create a new cluster, you’d define that cluster just as you’d define a Pod or other Kubernetes object, then apply the YAML file to the Management Cluster, which acts as the heart of the system. 
+The k0rdent architecture follows a [declarative approach](#terms-and-clarification) to cluster management using Kubernetes principles. The modular extensible architecture provides for a repeatable template driven solution to interact with sub components like the Cluster API (CAPI) and other kubernetes components.
+
+The key principles of the architecture include:
+
+* Leverage Kubernetes core principles
+* Highly aligned but loosely coupled architecture
+* Plugable and extensible architecture
+* Template driven approach for repeatability
+* Standards driven API
+* Leverage unmodified upstream components (e.g.CAPI)
+* Support integration with custom components downstream
+
+>Note:
+>This document is a ongoing work in progress, and we would welcome suggestions and questions. 
+
+## Summary
+
 The Management Cluster can orchestrate the provisioning and lifecycle of multiple child clusters on multiple clouds and infrastructures, keeping you from having to directly interact with individual infrastructure providers. By abstracting infrastructure, k0rdent promotes reusability (reducing, for example, the effort required to implement an IDP on a particular cloud), encourages standardization where practical, lets you use the clouds and technologies you want, but also minimizes the cost of switching (e.g., open source subsystems, cloud substrates, etc.) if you need to.
 
-The k0rdent architecture comprises the following components:
+The k0rdent architecture comprises the following highlevel components:
 
 * **Cluster Management:** Tools and controllers for defining, provisioning, and managing clusters.
 * **State Management:** Controllers and systems for monitoring, updating, and managing the state of child clusters and their workloads.
@@ -12,21 +28,20 @@ The k0rdent architecture comprises the following components:
 
 Let’s look at each of these in more detail.
 
-![k0rdent Architecture - Simplified](assets/k0rdent-architecture-simple.png)
+![k0rdent Architecture - Simplified](assets/k0rdent-highlevel-architecure-overview.svg)
 
 
 ## Management cluster
 
-The management cluster is the core of the k0rdent architecture. It hosts all of the controllers needed to make k0rdent’s platform engineering work. This includes:
+The management cluster is the core of the k0rdent architecture. It hosts all of the controllers needed to make k0rdent’s work. This includes:
 
 * **k0rdent Cluster Manager (KCM) Controller:**  KCM provides a wrapper for k0rdent’s CAPI-related capabilities. It orchestrates:
     * **Cluster API (CAPI) Controllers:** CAPI controllers are designed to work with specific infrastructure providers. For example, one CAPI controller will manage the creation and lifecycle of Kubernetes clusters running on Amazon Web Services, while another manages those on Azure. It’s also possible to create custom CAPI controllers to integrate with internal systems.
     * **k0smotron Controller:** k0smotron extends CAPI with additional functionality, including control plane and worker node bootstrap providers for k0s Kubernetes, and a control plane provider that supports Hosted Control Plane creation (i.e., k0s control planes in pods on a host Kubernetes cluster, which can be the same cluster that hosts k0rdent).The k0smotron project has also provided a so-called ‘RemoteMachine’ infrastructure provider for CAPI, enabling deployment and cluster operations via SSH on arbitrary remote Linux servers (including small-scale edge devices).
     clusters. For example, users can deploy ingress controllers or other tools, or they can deploy complete application workloads.
-* **k0rdent Service Manager (KSM) Controller:** KSM is responsible for lifecycle managing (deploy, scale, update, upgrade, teardown) services and applications on clusters, and for doing continuous state management of these services and applications. It orchestrates:
-    * **Addon Controller:** Responsible for coordinating addons (combinations of services (and infrastructure provisioning dependencies) that add capabilities to the platform, e.g., KubeVirt with its dependencies can be packaged as an addon &mdash; installing it makes the cluster's worker nodes able to host virtual machines as containers). Artifacts for addons are stored locally or remotely in a Helm repo and OCI repository.
-    * **Helm Controller:** Responsible for directly managing Helm operations involved in lifecycle managing services and applications on clusters.
-    * **Event Controller:** Responsible for polling the state of services and passing notifications to a Notification Provider.
+* **k0rdent Service Manager (KSM) Controller:** KSM is responsible for lifecycle managing (deploy, scale, update, upgrade, teardown) services and applications on clusters, and for doing continuous state management of these services and applications. This is currently part of the KCM code base, we may split it out in the future. It orchestrates:
+    * **Services Controller:** Responsible for coordinating kubernetes services (combinations of services (and infrastructure provisioning dependencies) that add capabilities to the platform, e.g., Nginx with its dependencies can be packaged as a services
+    Artifacts for services are locally or in a OCI repository and are referenced as kubernetes CRD objects.
 * **k0rdent Observability & FinOps (KOF) Controller (not depicted in above diagram):** k0rdent Observability and FinOps provides enterprise-grade observability and FinOps capabilities for k0rdent-managed Kubernetes clusters. It enables centralized metrics, logging, and cost management
 through a unified OpenTelemetry-based architecture.
 
@@ -51,8 +66,8 @@ Designed to be used in multiple contexts using runtime parameterization: Through
 
 Major template types used in k0rdent include:
 
-* **ClusterTemplates:** ClusterTemplates define clusters in coordination with the clouds and infrastructures they run on. They're designed to be immutable &mdash; they get invoked by k0rdent objects like `ClusterDeployment`s to create and manage individual clusters and groups of clusters.
-* **ServiceTemplates:** ServiceTemplates define services, addons, and workloads that run on clusters. They're also designed to be immutable, and get invoked by 'ClusterDeployment's and other k0rdent objects so that IDPs/platforms can be declared and managed as units. 
+* **Cluster Templates:** ClusterTemplates define clusters in coordination with the clouds and infrastructures they run on. They're designed to be immutable &mdash; they get invoked by k0rdent objects like `ClusterDeployment`s to create and manage individual clusters and groups of clusters.
+* **Service Templates:** ServiceTemplates define services, addons, and workloads that run on clusters. They're also designed to be immutable, and get invoked by 'ClusterDeployment's and other k0rdent objects so that IDPs/platforms can be declared and managed as units. 
 
 ## Roles and responsibilities
 
@@ -60,7 +75,7 @@ k0rdent was designed to be used by several groups of people, with hierarchical a
 
 * **Platform Architect:** This person or team has global responsibility to the business and technical stakeholders for designing IDPs/platforms for later adaptation to particular clouds and infrastructures, workloads, performance and cost objectives, security and regulatory regimes, and operational requirements. k0rdent enables Platform Architects to create sets of reusable ClusterTemplates and ServiceTemplates closely defining IDPs/platforms in the abstract.
 * **Platform Lead:** This person or team (sometimes referred to as 'CloudOps') is primarily responsible for the left-hand side of the above diagram, corresponding to k0rdent Cluster Manager (KSM). They adapt ClusterTemplates to the correct cloud, and they make sure that everything is working properly. They’re also responsible for limiting the Project Team’s access to Cluster and Service templates necessary to do their jobs. For example, they might limit the templates that can be deployed to an approved set, or provide CAPI operators for only the clouds on which the company wants applications to run, helping to eliminate shadow IT. 
-* **Project Team:** This person or team is responsible for the right-hand side of the above diagram, corresponding to k0rdent Service Manager. They use ClusterTemplates and ServiceTemplates provided by the Platform Lead (as authorized to do so) and may create additional ServiceTemplates to customize their own Kubernetes cluster so that it’s appropriate for their application.
+* **Platform Engineer:** This person or team who are responsible for the day to day management of the environment. They use ClusterTemplates and ServiceTemplates provided by the Platform Lead (as authorized to do so) and may create additional ServiceTemplates to customize their own Kubernetes cluster so that it’s appropriate for their application.
 
 ## Credentials
 
@@ -81,3 +96,7 @@ k0rdent provides a comprehensive Kubernetes lifecycle management framework throu
 * **KOF:** Observability, logging, and cost optimization.
 
 With multi-provider support, templated deployments, and strong security controls, k0rdent is being built to enable scalable, efficient, and consistent Kubernetes operations.
+
+## Terms and Clarification
+
+**Declarative approach**: We define define the declarative approach to cluster management using the Kubernetes principles as the process where you define the state you want within custom resource objects and the controllers or customer operators ensure that the system moves toward that desired state.
