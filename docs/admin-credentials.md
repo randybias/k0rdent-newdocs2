@@ -79,20 +79,20 @@ In order to pass credentials to k0rdent so it can take action, the following has
     
 4. Optionally, certain credentials MAY be propagated to the `ClusterDeployment` after it is created.
 
-The following diagram illustrates the process:
+    The following diagram illustrates the process:
 
-```mermaid
-flowchart TD
-  Step1["<b>Step 1</b> (Lead Engineer):<br/>Create ClusterIdentity and Secret objects where ClusterIdentity references Secret"]
-  Step1 --> Step2["<b>Step 2</b> (Any Engineer):<br/>Create Credential object referencing ClusterIdentity"]
-  Step2 --> Step3["<b>Step 3</b> (Any Engineer):<br/>Create ClusterDeployment referencing Credential object"]
-  Step3 --> Step4["<b>Step 4</b> (Any Engineer):<br/>Apply ClusterDeployment, wait for provisioning & reconciliation, then propagate credentials to nodes if necessary"]
-```
+    ```mermaid
+    flowchart TD
+      Step1["<b>Step 1</b> (Lead Engineer):<br/>Create ClusterIdentity and Secret objects where ClusterIdentity references Secret"]
+      Step1 --> Step2["<b>Step 2</b> (Any Engineer):<br/>Create Credential object referencing ClusterIdentity"]
+      Step2 --> Step3["<b>Step 3</b> (Any Engineer):<br/>Create ClusterDeployment referencing Credential object"]
+      Step3 --> Step4["<b>Step 4</b> (Any Engineer):<br/>Apply ClusterDeployment, wait for provisioning & reconciliation, then propagate credentials to nodes if necessary"]
+    ```
 
-By design steps 1 and 2 should be executed by the lead engineer who has
-access to the credentials. Thus credentials could be used by engineers
-without a need to have access to actual credentials or underlying resources,
-like `ClusterIdentity`.
+    By design steps 1 and 2 should be executed by the lead engineer who has
+    access to the credentials. Thus credentials could be used by engineers
+    without a need to have access to actual credentials or underlying resources,
+    like `ClusterIdentity`.
 
 ## Cloud provider credentials propagation
 

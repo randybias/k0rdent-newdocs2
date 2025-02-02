@@ -98,11 +98,10 @@ Follow these steps to set up a k0smotron-hosted control plane on AWS:
     > NOTE:  
     > The example above uses the `us-west-1` region, but you should use the region of your VPC.
 
-### Generate the `ClusterDeployment` Manifest
+4. Generate the `ClusterDeployment` Manifest
 
     To simplify the creation of a `ClusterDeployment` manifest, you can use the following template, which dynamically 
     inserts the appropriate values:
-
     ```yaml
     apiVersion: k0rdent.mirantis.com/v1alpha1
     kind: ClusterDeployment
@@ -136,7 +135,7 @@ Follow these steps to set up a k0smotron-hosted control plane on AWS:
     kubectl get awscluster <cluster-name> -o go-template="$(cat clusterdeployment.yaml.tpl)" > clusterdeployment.yaml
     ```
 
-4. Apply the `ClusterTemplate`
+5. Apply the `ClusterTemplate`
 
     Nothing actually happens until you apply the `ClusterDeployment` manifest to create a new cluster deployment:
 
@@ -150,24 +149,24 @@ Here are some additional tips to help with deployment:
 
 1. Controller and Template Availability:
 
-   Make sure the kcm controller image and templates are available in a public or accessible repository.
+    Make sure the kcm controller image and templates are available in a public or accessible repository.
 
 2. Install Charts and Templates:
 
-   If you're using a custom repository, run the following commands with the appropriate `kubeconfig`:
+    If you're using a custom repository, run the following commands with the appropriate `kubeconfig`:
 
-   ```shell
-   KUBECONFIG=kubeconfig IMG="ghcr.io/k0rdent/kcm/controller-ci:v0.0.1-179-ga5bdf29" REGISTRY_REPO="oci://ghcr.io/k0rdent/kcm/charts-ci" make dev-apply
-   KUBECONFIG=kubeconfig make dev-templates
-   ```
+    ```shell
+    KUBECONFIG=kubeconfig IMG="ghcr.io/k0rdent/kcm/controller-ci:v0.0.1-179-ga5bdf29" REGISTRY_REPO="oci://ghcr.io/k0rdent/kcm/charts-ci" make dev-apply
+    KUBECONFIG=kubeconfig make dev-templates
+    ```
 
 3. Mark Infrastructure as Ready:
 
-   To scale up the `MachineDeployment`, manually mark the infrastructure as ready:
-   ```shell
-   kubectl patch AWSCluster <hosted-cluster-name> --type=merge --subresource status --patch '{"status": {"ready": true}}' -n kcm-system
-   ```
-   For more details on why this is necessary, [click here](https://docs.k0smotron.io/stable/capi-aws/#:~:text=As%20we%20are%20using%20self%2Dmanaged%20infrastructure%20we%20need%20to%20manually%20mark%20the%20infrastructure%20ready.%20This%20can%20be%20accomplished%20using%20the%20following%20command).
+    To scale up the `MachineDeployment`, manually mark the infrastructure as ready:
+    ```shell
+    kubectl patch AWSCluster <hosted-cluster-name> --type=merge --subresource status --patch '{"status": {"ready": true}}' -n kcm-system
+    ```
+    For more details on why this is necessary, [click here](https://docs.k0smotron.io/stable/capi-aws/#:~:text=As%20we%20are%20using%20self%2Dmanaged%20infrastructure%20we%20need%20to%20manually%20mark%20the%20infrastructure%20ready.%20This%20can%20be%20accomplished%20using%20the%20following%20command).
 
 ## Azure Hosted Control Plane Deployment
 
@@ -254,7 +253,7 @@ Follow these steps to set up a k0smotron-hosted control plane on Azure:
           securityGroupName: mgmt-cluster-node-nsg
     ```
 
-### Generate the `ClusterDeployment` Manifest
+4. Generate the `ClusterDeployment` manifest
 
     To simplify the creation of a `ClusterDeployment` manifest, you can use the following template, which dynamically inserts 
     the appropriate values:
@@ -279,7 +278,6 @@ Follow these steps to set up a k0smotron-hosted control plane on Azure:
           routeTableName: "{{(index .spec.networkSpec.subnets 1).routeTable.name}}"
           securityGroupName: "{{(index .spec.networkSpec.subnets 1).securityGroup.name}}"
     ```
-
     Save this YAML as `clusterdeployment.yaml.tpl` and render the manifest with the following command:
     ```shell
     kubectl get azurecluster <management-cluster-name> -o go-template="$(cat clusterdeployment.yaml.tpl)" > clusterdeployment.yaml
@@ -310,22 +308,23 @@ Due to these same k0smotron limitations, you **must** take some manual steps in 
 
 1. Add a Custom Finalizer to the AzureCluster Object:
 
-   To prevent the `AzureCluster` object from being deleted too early, add a custom finalizer:
+    To prevent the `AzureCluster` object from being deleted too early, add a custom finalizer:
 
-   ```shell
-   kubectl patch azurecluster <cluster-name> --type=merge --patch '{"metadata": {"finalizers": ["manual"]}}'
-   ```
+    ```shell
+    kubectl patch azurecluster <cluster-name> --type=merge --patch '{"metadata": {"finalizers": ["manual"]}}'
+    ```
 
 2. Delete the ClusterDeployment:
-   After adding the finalizer, delete the `ClusterDeployment` object as usual. Confirm that all `AzureMachines` objects have been deleted successfully.
+
+    After adding the finalizer, delete the `ClusterDeployment` object as usual. Confirm that all `AzureMachines` objects have been deleted successfully.
 
 3. Remove Finalizers from Orphaned AzureMachines:
 
-   If any `AzureMachines` are left orphaned, delete their finalizers manually after confirming no VMs remain in Azure. Use this command to remove the finalizer:
+    If any `AzureMachines` are left orphaned, delete their finalizers manually after confirming no VMs remain in Azure. Use this command to remove the finalizer:
 
-   ```shell
-   kubectl patch azuremachine <machine-name> --type=merge --patch '{"metadata": {"finalizers": []}}'
-   ```
+    ```shell
+    kubectl patch azuremachine <machine-name> --type=merge --patch '{"metadata": {"finalizers": []}}'
+    ```
 
 4. Allowing Updates to Orphaned Objects:
 

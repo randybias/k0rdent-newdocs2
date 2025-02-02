@@ -41,7 +41,7 @@ There are two options to override the default management configuration of k0rden
 
 1. Update the `Management` object after the k0rdent installation using `kubectl`:
 
-   `kubectl --kubeconfig <path-to-management-kubeconfig> edit management`
+    `kubectl --kubeconfig <path-to-management-kubeconfig> edit management`
 
 2. Deploy k0rdent skipping the default `Management` object creation and provide your
    own `Management` configuration:
@@ -74,7 +74,9 @@ There are two options to override the default management configuration of k0rden
       If installing using `helm` add the following parameter to the `helm
       install` command:
 
-      `--set="controller.createManagement=false"`
+        ```shell
+        --set="controller.createManagement=false"
+        ```
 
     - Create `kcm` `Management` object after k0rdent installation:
 

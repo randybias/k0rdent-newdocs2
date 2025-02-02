@@ -263,7 +263,6 @@ k0rdent is able to deploy managed clusters as both EC2-based Kubernetes clusters
       worker:
         instanceType: t3.small
 	```
-
   > NOTE:
   > - You're giving it an arbitrary name in `.metadata.name` (`my-aws-clusterdeployment1`)
   > - You're referencing the credential you created in the previous step, `aws-cluster-identity-cred`. This enables you to set up a system where users can take advantage of having access to the credentials to the AWS account without actually having those credentials in hand.
@@ -272,7 +271,6 @@ k0rdent is able to deploy managed clusters as both EC2-based Kubernetes clusters
   ```shell
   kubectl get clustertemplate -n kcm-system
   ```
-
 	```console
 	NAMESPACE    NAME                            VALID
 	kcm-system   adopted-cluster-0-0-2           true
@@ -286,18 +284,14 @@ k0rdent is able to deploy managed clusters as both EC2-based Kubernetes clusters
 	kcm-system   vsphere-hosted-cp-0-0-5         true
 	kcm-system   vsphere-standalone-cp-0-0-5     true
 	```
-
 	Apply the YAML to your management cluster:
-
 	```shell
 	kubectl apply -f my-aws-clusterdeployment1.yaml
 	```
 	```console
 	clusterdeployment.k0rdent.mirantis.com/my-aws-clusterdeployment1 created
 	```
-	
-    As before, there will be a delay as the cluster finishes provisioning. Follow the provisioning process with:
-
+  As before, there will be a delay as the cluster finishes provisioning. Follow the provisioning process with:
 	```shell
 	kubectl -n kcm-system get clusterdeployment.k0rdent.mirantis.com my-aws-clusterdeployment1 --watch
 	```
@@ -305,21 +299,18 @@ k0rdent is able to deploy managed clusters as both EC2-based Kubernetes clusters
 	NAME                        READY   STATUS
 	my-aws-clusterdeployment1   True    ClusterDeployment is ready
 	```
-
 	When the cluster is `Ready`, you can access it via the kubeconfig, as in:
-
 	```shell
 	kubectl -n kcm-system get secret my-aws-clusterdeployment1-kubeconfig -o jsonpath='{.data.value}' | base64 -d > my-aws-clusterdeployment1-kubeconfig.kubeconfig
 	KUBECONFIG="my-aws-clusterdeployment1-kubeconfig.kubeconfig" kubectl get pods -A
 	```
-
 14. Cleanup
 
-	When you've established that it's working properly. you can delete the managed cluster and its AWS objects:
+  When you've established that it's working properly. you can delete the managed cluster and its AWS objects:
 
-	```shell
-	kubectl delete ClusterDeployment my-aws-clusterdeployment1 
-	```
+  ```shell
+  kubectl delete ClusterDeployment my-aws-clusterdeployment1 
+  ```
 
 ## Azure
 

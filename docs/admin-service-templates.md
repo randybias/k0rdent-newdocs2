@@ -23,6 +23,7 @@ The basic sequence looks like this:
       type: oci
       url: oci://ghcr.io/external-templates-repo/charts
     ```
+
   2. Create the `ServiceTemplate`
 
     A template can either define a Helm chart directly using the template's `spec.helm.chartSpec` field or reference its location using the `spec.helm.chartRef` field.
@@ -80,6 +81,7 @@ The basic sequence looks like this:
     ```shell
     kubectl apply -f project-ingress.yaml -n my-target-namespace
     ```
+
   4. Adding a `Service` to a `ClusterDeployment`
 
     To add the service defined by this template to a cluster, you would simply add it to the `ClusterDeployment` object

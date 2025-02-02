@@ -173,36 +173,36 @@ and the upgrade sequences for them.
 The example of `ClusterTemplate` Management:
 
 1. Create a `ClusterTemplateChain` object in the system namespace (defaults to `kcm-system`). Properly configure
-   the list of `.spec.supportedTemplates[].availableUpgrades` for the specified `ClusterTemplate` if you want to
-   allow upgrading. For example:
+    the list of `.spec.supportedTemplates[].availableUpgrades` for the specified `ClusterTemplate` if you want to
+    allow upgrading. For example:
 
-   ```yaml
-   apiVersion: k0rdent.mirantis.com/v1alpha1
-   kind: ClusterTemplateChain
-   metadata:
-     name: aws
-     namespace: kcm-system
-   spec:
-     supportedTemplates:
-       - name: aws-standalone-cp-0-0-1
-         availableUpgrades:
-           - name: aws-standalone-cp-0-0-2
-       - name: aws-standalone-cp-0-0-2
-   ```
+    ```yaml
+    apiVersion: k0rdent.mirantis.com/v1alpha1
+    kind: ClusterTemplateChain
+    metadata:
+      name: aws
+      namespace: kcm-system
+    spec:
+      supportedTemplates:
+        - name: aws-standalone-cp-0-0-1
+          availableUpgrades:
+            - name: aws-standalone-cp-0-0-2
+        - name: aws-standalone-cp-0-0-2
+    ```
 
 2. Edit the `AccessManagement` object and configure the `.spec.accessRules`.
-   For example, to apply all templates and upgrade sequences defined in the `aws` `ClusterTemplateChain` to the
-   `default` namespace, the following `accessRule` should be added:
+    For example, to apply all templates and upgrade sequences defined in the `aws` `ClusterTemplateChain` to the
+    `default` namespace, the following `accessRule` should be added:
 
-```yaml
-spec:
-  accessRules:
-  - targetNamespaces:
-      list:
-        - default
-    clusterTemplateChains:
-      - aws
-```
+    ```yaml
+    spec:
+      accessRules:
+      - targetNamespaces:
+          list:
+            - default
+        clusterTemplateChains:
+          - aws
+    ```
 
 The kcm controllers will deliver all the `ClusterTemplate` objects across the target namespaces.
 As a result, the following new objects should be created:

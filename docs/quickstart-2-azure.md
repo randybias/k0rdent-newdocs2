@@ -172,7 +172,7 @@ spec:
 
 Apply the YAML to your cluster:
 
-```shell:
+```shell
 kubectl apply -f azure-cluster-identity.yaml
 ```
 
