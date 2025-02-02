@@ -22,21 +22,19 @@ services that make it useful.
 
 In short:
 Kubernetes clusters at scale, managed centrally, template driven, based on open
-community driven standards, enabling Golden Paths, k0rdent aspires to do that.
+community driven standards, enabling Golden Paths ... k0rdent aspires to do that.
 
 Whether you want to manage Kubernetes clusters on-premises, in the cloud,
-or a combination of both, k0rdent provides a consistent way to do so. With
+or a combination of both, k0rdent provides a consistent way to do it. With
 full life-cycle management, including provisioning, configuration, and
 maintenance, k0rdent is designed to be a repeatable and secure way to
 manage your Kubernetes clusters in a central location.
 
 ## k0rdent vs Project 2A
 
-k0rdent is the official name of this open source project developed by Mirantis, it
-started out life as and internal project that we codenamed "Project 2A". The 2A
-referencing the hexadecimal 0x2A, which encompassed our hopes for the project.
-
-## Project Components
+k0rdent is the official name of this open source project developed by Mirantis. It
+started out life as an internal project codenamed "Project 2A". 2A
+references the hexadecimal 0x2A, which encompasses our hopes for the project.
 
 ## k0rdent Components
 
@@ -50,7 +48,7 @@ The main components of k0rdent include:
 * **k0rdent State Manager (ksm)**
 
     Installation and life-cycle management of [beach-head services](glossary.md#beach-head-services),
-    policy, Kubernetes API configurations and more.
+    policy, Kubernetes API configurations, and more.
 
 * **k0rdent Observability and FinOps (kof)**
 
@@ -58,16 +56,15 @@ The main components of k0rdent include:
 
 ## Structure and History
 
-The project has a number of components, here are the names and components:
+The project has a number of components, including:
 
-* **k0rdent**: the overall project name
-  * **k0rdent Cluster Manager (kcm)**
-  * **k0rdent State Manager (ksm)**
-    * This is currently rolled into kcm, but may be split out in the
-      future
-    * ksm leverages [Project Sveltos](https://github.com/projectsveltos/sveltos)
-      for and increasing amount of functionality
-  * **k0rdent Observability and FinOps (kof)**
+* **k0rdent**: the overall project
+    * **k0rdent Cluster Manager (kcm)**
+    * **k0rdent State Manager (ksm)**
+        * This is currently rolled into kcm, but may be split out in the future
+        * ksm leverages [Project Sveltos](https://github.com/projectsveltos/sveltos)
+          for an increasing amount of functionality
+    * **k0rdent Observability and FinOps (kof)**
 
 There are a few historical names that may show up in the code and older docs.
 
@@ -86,14 +83,16 @@ See the [k0rdent Quick Start Guide](guide-to-quickstarts.md).
 
 k0rdent leverages the Cluster API provider ecosystem, the following
 providers have had `ProviderTemplates` created and validated, and more are
-in the works. k0rdent also includes a way to add custom providers.
+in the works. 
 
 * [AWS](admin-prepare.md#aws)
 * [Azure](admin-prepare.md#azure)
 * [vSphere](admin-prepare.md#vsphere)
 * [OpenStack](admin-prepare.md#openstack)
 
+k0rdent also includes a way to add custom providers.
+
 ## Development Documentation
 
-Documentation related to development process and developer specific notes
-located in the [main repository](https://github.com/k0rdent/kcm/blob/main/docs/dev.md).
+Documentation related to the development process and developer-specific notes is
+located in the [main k0rdent repository](https://github.com/k0rdent/kcm/blob/main/docs/dev.md).
