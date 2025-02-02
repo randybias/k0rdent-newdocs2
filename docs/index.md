@@ -40,17 +40,17 @@ references the hexadecimal 0x2A, which encompasses our hopes for the project.
 
 The main components of k0rdent include:
 
-* **k0rdent Cluster Manager (kcm)**
+* **k0rdent Cluster Manager (KCM)**
 
     Deployment and life-cycle management of Kubernetes clusters, including
     configuration, updates, and other CRUD operations.
 
-* **k0rdent State Manager (ksm)**
+* **k0rdent State Manager (KSM)**
 
     Installation and life-cycle management of [beach-head services](glossary.md#beach-head-services),
     policy, Kubernetes API configurations, and more.
 
-* **k0rdent Observability and FinOps (kof)**
+* **k0rdent Observability and FinOps (KOF)**
 
     Cluster and beach-head services monitoring, events and log management.
 
@@ -59,18 +59,18 @@ The main components of k0rdent include:
 The project has a number of components, including:
 
 * **k0rdent**: the overall project
-    * **k0rdent Cluster Manager (kcm)**
-    * **k0rdent State Manager (ksm)**
+    * **k0rdent Cluster Manager (KCM)**
+    * **k0rdent State Manager (KSM)**
         * This is currently rolled into kcm, but may be split out in the future
         * ksm leverages [Project Sveltos](https://github.com/projectsveltos/sveltos)
           for an increasing amount of functionality
-    * **k0rdent Observability and FinOps (kof)**
+    * **k0rdent Observability and FinOps (KOF)**
 
 There are a few historical names that may show up in the code and older docs.
 
 * **Project 2A**: the original codename of k0rdent (may occasionally show
   up in some documentation)
-* **HMC or hmc**: the original repository name for k0rdent and kcm
+* **HMC or hmc**: the original repository name for k0rdent and KCM
   development (may occasionally show up in some documentation and code)
 * **motel**: the original repository and codename for kof (may
   occasionally show up in some documentation and code)
