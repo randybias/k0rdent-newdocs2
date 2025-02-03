@@ -8,7 +8,7 @@ and use it to deploy an application to a k0rdent child cluster.
 
 The basic sequence looks like this:
 
-  1. Define the source of the Helm chart that defines the service.  For example, this YAML describes a custom `Source` object of `kind` `HelmRepository`:
+  1. Define the source of the Helm chart that defines the service. The source object must have the label `k0rdent.mirantis.com/managed: "true"`. For example, this YAML describes a custom `Source` object of `kind` `HelmRepository`:
 
     ```yaml
     apiVersion: source.toolkit.fluxcd.io/v1
@@ -16,6 +16,8 @@ The basic sequence looks like this:
     metadata:
       name: custom-templates-repo
       namespace: kcm-system
+      labels:
+        k0rdent.mirantis.com/managed: "true"
     spec:
       insecure: true
       interval: 10m0s

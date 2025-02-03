@@ -19,12 +19,18 @@ Note that it's important to pay attention to where the source resides. Cluster-s
 
 For example, this YAML describes a custom `Source` object of `kind` `HelmRepository`:
 
+> NOTE:
+> The custom `HelmRepository` must have the label
+> `k0rdent.mirantis.com/managed: "true"`.
+
 ```yaml
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: HelmRepository
 metadata:
   name: k0rdent-templates
   namespace: kcm-system
+  labels:
+    k0rdent.mirantis.com/managed: "true"
 spec:
   insecure: true
   interval: 10m0s
