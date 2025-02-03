@@ -2,7 +2,7 @@
 
 A hosted control plane is a Kubernetes setup in which the control plane components (such as the API server, 
 etcd, and controllers) run inside the management cluster instead of separate controller nodes. This 
-architecture centralizes control plane management, and improves scalability by sharing resources in the management cluster.
+architecture centralizes control plane management and improves scalability by sharing resources in the management cluster.
 Hosted control planes are managed by [k0smotron](https://k0smotron.io/).
 
 Instructions for setting up a hosted control plane vary slighting depending on the provider.
@@ -15,14 +15,14 @@ Follow these steps to set up a k0smotron-hosted control plane on AWS:
 
     Before proceeding, make sure you have the following:
 
-    - A management Kubernetes cluster (Kubernetes v1.28 or later) deployed on AWS with [k0rdent installed](admin-installation.md).
-    - A [default storage class](https://kubernetes.io/docs/tasks/administer-cluster/change-default-storage-class/) configured on the management cluster to support Persistent Volumes.
-    - The VPC ID where the worker nodes will be deployed.
-    - The Subnet ID and Availability Zone (AZ) for the worker nodes.
-    - The AMI ID for the worker nodes (Amazon Machine Image ID for the desired OS and Kubernetes version).
+    * A management Kubernetes cluster (Kubernetes v1.28 or later) deployed on AWS with [k0rdent installed](admin-installation.md).
+    * A [default storage class](https://kubernetes.io/docs/tasks/administer-cluster/change-default-storage-class/) configured on the management cluster to support Persistent Volumes.
+    * The VPC ID where the worker nodes will be deployed.
+    * The Subnet ID and Availability Zone (AZ) for the worker nodes.
+    * The AMI ID for the worker nodes (Amazon Machine Image ID for the desired OS and Kubernetes version).
 
     > IMPORTANT:  
-    > All control plane components for your hosted cluster will reside in the management cluster. The management cluster 
+    > All control plane components for your hosted cluster will reside in the management cluster, and the management cluster 
     > must have sufficient resources to handle these additional workloads.
 
 2. Networking
@@ -65,7 +65,7 @@ Follow these steps to set up a k0smotron-hosted control plane on AWS:
 3. Create the ClusterDeployment manifest
 
     Once you've collected all the necessary data, you can create the `ClusterDeployment` manifest. This file tells k0rdent how to 
-    deploy and manage the hosted control plane. Below is an example:
+    deploy and manage the hosted control plane. For example:
 
     ```yaml
     apiVersion: k0rdent.mirantis.com/v1alpha1
@@ -73,7 +73,7 @@ Follow these steps to set up a k0smotron-hosted control plane on AWS:
     metadata:
       name: aws-hosted-cp
     spec:
-      template: aws-hosted-cp-0-0-3
+      template: aws-hosted-cp-0-1-0
       credential: aws-credential
       config:
         clusterLabels: {}
@@ -108,7 +108,7 @@ Follow these steps to set up a k0smotron-hosted control plane on AWS:
     metadata:
       name: aws-hosted
     spec:
-      template: aws-hosted-cp-0-0-3
+      template: aws-hosted-cp-0-1-0
       credential: aws-credential
       config:
         clusterLabels: {}
@@ -149,7 +149,7 @@ Here are some additional tips to help with deployment:
 
 1. Controller and Template Availability:
 
-    Make sure the kcm controller image and templates are available in a public or accessible repository.
+    Make sure the KCM controller image and templates are available in a public or accessible repository.
 
 2. Install Charts and Templates:
 
@@ -160,7 +160,7 @@ Here are some additional tips to help with deployment:
     KUBECONFIG=kubeconfig make dev-templates
     ```
 
-3. Mark Infrastructure as Ready:
+3. Mark the Infrastructure as Ready:
 
     To scale up the `MachineDeployment`, manually mark the infrastructure as ready:
     ```shell
@@ -184,7 +184,7 @@ Follow these steps to set up a k0smotron-hosted control plane on Azure:
     > All control plane components for managed clusters will run in the management cluster. Make sure the management cluster 
       has sufficient CPU, memory, and storage to handle the additional workload.
 
-2.  Gather pre-existing resources
+2.  Gather Pre-existing Resources
 
     In a hosted control plane setup, some Azure resources must exist before deployment and must be explicitly 
     provided in the `ClusterDeployment` configuration. These resources can also be reused by the management cluster.
@@ -238,7 +238,7 @@ Follow these steps to set up a k0smotron-hosted control plane on Azure:
     metadata:
       name: azure-hosted-cp
     spec:
-      template: azure-hosted-cp-0-0-2
+      template: azure-hosted-cp-0-1-0
       credential: azure-credential
       config:
         clusterLabels: {}
@@ -253,7 +253,7 @@ Follow these steps to set up a k0smotron-hosted control plane on Azure:
           securityGroupName: mgmt-cluster-node-nsg
     ```
 
-4. Generate the `ClusterDeployment` manifest
+4. Generate the `ClusterDeployment` Manifest
 
     To simplify the creation of a `ClusterDeployment` manifest, you can use the following template, which dynamically inserts 
     the appropriate values:
@@ -264,7 +264,7 @@ Follow these steps to set up a k0smotron-hosted control plane on Azure:
     metadata:
       name: azure-hosted-cp
     spec:
-      template: azure-hosted-cp-0-0-2
+      template: azure-hosted-cp-0-1-0
       credential: azure-credential
       config:
         clusterLabels: {}
@@ -344,54 +344,54 @@ Follow these steps to set up a k0smotron-hosted control plane on vSphere.
 
     - A management Kubernetes cluster (Kubernetes v1.28+) deployed on vSphere with [k0rdent installed](admin-installation.md).
 
-    All control plane components for managed clusters will reside in the management cluster. Make sure the management 
+    All control plane components for managed clusters will reside in the management cluster, so make sure the management 
     cluster has sufficient resources (CPU, memory, and storage) to handle these workloads.
 
 2. Create the `ClusterDeployment` Manifest
 
-The `ClusterDeployment` manifest for vSphere-hosted control planes is similar to standalone control plane deployments. 
-For a detailed list of parameters, refer to our discussion of [Template parameters for vSphere](template-vsphere.md).
+    The `ClusterDeployment` manifest for vSphere-hosted control planes is similar to standalone control plane deployments. 
+    For a detailed list of parameters, refer to our discussion of [Template parameters for vSphere](template-vsphere.md).
 
-> IMPORTANT: 
-> The vSphere provider requires you to specify the control plane endpoint IP before deploying the cluster. This IP 
-> address must match the one assigned to the k0smotron load balancer (LB) service.  
-> Use an annotation supported by your load balancer provider to assign the control plane endpoint IP to the k0smotron 
-> service. For example, the manifest below includes a `kube-vip` annotation.
+    > IMPORTANT: 
+    > The vSphere provider requires you to specify the control plane endpoint IP before deploying the cluster. This IP 
+    > address must match the one assigned to the k0smotron load balancer (LB) service.  
+    > Use an annotation supported by your load balancer provider to assign the control plane endpoint IP to the k0smotron 
+    > service. For example, the manifest below includes a `kube-vip` annotation.
 
-`ClusterDeployment`s for vSphere-based clusters include a `.spec.config.vsphere` object that contains vSphere-specific
-parameters. For example:
+    `ClusterDeployment` objects for vSphere-based clusters include a `.spec.config.vsphere` object that contains vSphere-specific
+    parameters. For example:
 
-```yaml
-apiVersion: k0rdent.mirantis.com/v1alpha1
-kind: ClusterDeployment
-metadata:
-  name: cluster-1
-spec:
-  template: vsphere-hosted-cp-0-0-2
-  credential: vsphere-credential
-  config:
-    clusterLabels: {}
-    vsphere:
-      server: vcenter.example.com
-      thumbprint: "00:00:00"
-      datacenter: "DC"
-      datastore: "/DC/datastore/DC"
-      resourcePool: "/DC/host/vCluster/Resources/ResPool"
-      folder: "/DC/vm/example"
-    controlPlaneEndpointIP: "172.16.0.10"
-    ssh:
-      user: ubuntu
-      publicKey: |
-        ssh-rsa AAA...
-    rootVolumeSize: 50
-    cpus: 2
-    memory: 4096
-    vmTemplate: "/DC/vm/template"
-    network: "/DC/network/Net"
-    k0smotron:
-      service:
-        annotations:
-          kube-vip.io/loadbalancerIPs: "172.16.0.10"
-```
+    ```yaml
+    apiVersion: k0rdent.mirantis.com/v1alpha1
+    kind: ClusterDeployment
+    metadata:
+      name: cluster-1
+    spec:
+      template: vsphere-hosted-cp-0-1-0
+      credential: vsphere-credential
+      config:
+        clusterLabels: {}
+        vsphere:
+          server: vcenter.example.com
+          thumbprint: "00:00:00"
+          datacenter: "DC"
+          datastore: "/DC/datastore/DC"
+          resourcePool: "/DC/host/vCluster/Resources/ResPool"
+          folder: "/DC/vm/example"
+        controlPlaneEndpointIP: "172.16.0.10"
+        ssh:
+          user: ubuntu
+          publicKey: |
+            ssh-rsa AAA...
+        rootVolumeSize: 50
+        cpus: 2
+        memory: 4096
+        vmTemplate: "/DC/vm/template"
+        network: "/DC/network/Net"
+        k0smotron:
+          service:
+            annotations:
+              kube-vip.io/loadbalancerIPs: "172.16.0.10"
+    ```
 
 For more information on these parameters, see the [Template reference for vsphere](template-vsphere.md). 

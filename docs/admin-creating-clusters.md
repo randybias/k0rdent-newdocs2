@@ -4,7 +4,7 @@ Once you've installed k0rdent, you can use it to create, manage, update and even
 
 ## Deploying a Cluster
 
-k0rdent is designed to simplify the process of deploying and managing Kubernetes clusters across various cloud platforms. It does this through the use of `ClusterDeployment`s, which include all of the information k0rdent needs to know in order to create the cluster you're looking for. This `ClusterDeployment` system relies on predefined templates and credentials. 
+k0rdent is designed to simplify the process of deploying and managing Kubernetes clusters across various cloud platforms. It does this through the use of `ClusterDeployment` objects, which include all of the information k0rdent needs to know in order to create the cluster you're looking for. This `ClusterDeployment` system relies on predefined templates and credentials. 
 
 A cluster deployment typically involves:
 
@@ -23,7 +23,7 @@ Follow these steps to deploy a standalone Kubernetes cluster tailored to your sp
     querying the management cluster:
 
     ```shell
-    kubectl get credentials -n A
+    kubectl get credentials --all-namespaces
     ```
 
     If the `Credential` you need doesn't yet exist, go ahead and create it.
@@ -35,11 +35,11 @@ Follow these steps to deploy a standalone Kubernetes cluster tailored to your sp
 
 2. Select a Template
 
-    Templates in k0rdent are predefined configurations that describe how the cluster should be set up. Templates include details such as:
+    Templates in k0rdent are predefined configurations that describe how to set up the cluster. Templates include details such as:
 
-    - The number and type of control plane and worker nodes.
-    - Networking settings.
-    - Regional deployment preferences.
+    * The number and type of control plane and worker nodes
+    * Networking settings
+    * Regional deployment preferences
 
     Templates act as a blueprint for creating a cluster. To see the list of available templates, use the following command:
 
@@ -47,32 +47,32 @@ Follow these steps to deploy a standalone Kubernetes cluster tailored to your sp
     kubectl get clustertemplate -n kcm-system
     ```
     ```console
-    NAMESPACE    NAME                            VALID
-    kcm-system   adopted-cluster-0-0-2           true
-    kcm-system   aws-eks-0-0-3                   true
-    kcm-system   aws-hosted-cp-0-0-4             true
-    kcm-system   aws-standalone-cp-0-0-5         true
-    kcm-system   azure-aks-0-0-2                 true
-    kcm-system   azure-hosted-cp-0-0-4           true
-    kcm-system   azure-standalone-cp-0-0-5       true
-    kcm-system   openstack-standalone-cp-0-0-2   true
-    kcm-system   vsphere-hosted-cp-0-0-5         true
-    kcm-system   vsphere-standalone-cp-0-0-5     true
+    NAME                            VALID
+    adopted-cluster-0-1-0           true
+    aws-eks-0-1-0                   true
+    aws-hosted-cp-0-1-0             true
+    aws-standalone-cp-0-1-0         true
+    azure-aks-0-1-0                 true
+    azure-hosted-cp-0-1-0           true
+    azure-standalone-cp-0-1-0       true
+    openstack-standalone-cp-0-1-0   true
+    vsphere-hosted-cp-0-1-0         true
+    vsphere-standalone-cp-0-1-0     true
     ```
 
     You can then get information on the actual template by describing it, as in:
 
     ```shell
-    kubectl describe clustertemplate aws-standalone-cp-0-0-5 -n ksm-system
+    kubectl describe clustertemplate aws-standalone-cp-0-1-0 -n kcm-system
     ```
 
 3. Create a ClusterDeployment YAML Configuration
 
     The `ClusterDeployment` object is the main configuration file that defines your cluster's specifications. It includes:
 
-    - The template to use.
-    - The credentials for the infrastructure provider.
-    - Optional customizations such as instance types, regions, and networking.
+    * The template to use
+    * The credentials for the infrastructure provider
+    * Optional customizations such as instance types, regions, and networking
 
     Create a `ClusterDeployment` configuration in a YAML file, following this structure:
 
@@ -90,7 +90,7 @@ Follow these steps to deploy a standalone Kubernetes cluster tailored to your sp
         <cluster-configuration>
     ```
 
-    You will of course want to replace the placeholders with actual values. (For more information about `dryRun` see [Understanding the Dry Run](appendix-dryrun.md)) For example, this is a simple AWS infrastructure provider `ClusterDeployment`:
+    You will of course want to replace the placeholders with actual values. (For more information about `dryRun` see [Understanding the Dry Run](appendix-dryrun.md).) For example, this is a simple AWS infrastructure provider `ClusterDeployment`:
 
     ```yaml
     apiVersion: k0rdent.mirantis.com/v1alpha1
@@ -99,7 +99,7 @@ Follow these steps to deploy a standalone Kubernetes cluster tailored to your sp
       name: my-managed-cluster
       namespace: kcm-system
     spec:
-      template: aws-standalone-cp-0-0-3
+      template: aws-standalone-cp-0-1-0
       credential: aws-credential
       dryRun: false
       config:
@@ -134,7 +134,7 @@ Follow these steps to deploy a standalone Kubernetes cluster tailored to your sp
 
 6. Monitor Provisioning
 
-    k0rdent will now start provisioning resources (e.g., VMs, networks) and setting up the cluster. To monitor this process, run:
+    k0rdent will now start provisioning resources (for example, VMs and networks) and setting up the cluster. To monitor this process, run:
 
     ```shell
     kubectl -n <namespace> get cluster <cluster-name> -o=yaml
@@ -165,7 +165,7 @@ Follow these steps to deploy a standalone Kubernetes cluster tailored to your sp
 
 ## Updating a Single Standalone Cluster
 
-k0rdent `ClusterTemplate`s are immutable, so the only way to change a `ClusterDeployment` is to change the template
+k0rdent `ClusterTemplate` objects are immutable, so the only way to change a `ClusterDeployment` is to change the template
 that forms its basis. 
 
 To update the `ClusterDeployment`, modify the `.spec.template` field to use the name of the new `ClusterTemplate`. 
@@ -176,7 +176,7 @@ k0rdent will then realize the cluster is out of sync and will attempt to remedy 
 
 Follow these steps to update the `ClusterDeployment`:
 
-  1. Patch the `ClusterDeployment` with the new template
+1. Patch the `ClusterDeployment` with the new template
 
     Run the following command, replacing the placeholders with the appropriate values:
 
@@ -184,7 +184,7 @@ Follow these steps to update the `ClusterDeployment`:
     kubectl patch clusterdeployment.kcm <cluster-name> -n <namespace> --patch '{"spec":{"template":"<new-template-name>"}}' --type=merge
     ```
 
-  2. Check the status of the `ClusterDeployment`
+2. Check the status of the `ClusterDeployment`
 
     After applying the patch, verify the status of the `ClusterDeployment` object:
 
@@ -192,7 +192,7 @@ Follow these steps to update the `ClusterDeployment`:
     kubectl get clusterdeployment.kcm <cluster-name> -n <namespace>
     ```
 
-  3. Inspect the detailed status
+3. Inspect the detailed status
 
     For more details, use the `-o=yaml` option to check the `.status.conditions` field:
 
@@ -207,25 +207,25 @@ for example, this `ClusterTemplateChain`:
 apiVersion: k0rdent.mirantis.com/v1alpha1
 kind: ClusterTemplateChain
 metadata:
-  name: aws-standalone-cp-0.0.2
+  name: aws-standalone-cp-0-1-0
   namespace: kcm-system
 spec:
   supportedTemplates:
-    - name: aws-standalone-cp-0.0.1
+    - name: aws-standalone-cp-0-0-2
       availableUpgrades:
-        - name: aws-standalone-cp-0.0.2
-    - name: aws-standalone-cp-0.0.2
+        - name: aws-standalone-cp-0-1-0
+    - name: aws-standalone-cp-0-1-0
 ```
 
-As you can see from the `.spec`, the `aws-standalone-co-0.0.2` template can be applied to a cluster that also uses
-the `aws-standalone-co-0.0.2` template, or it can be used as an upgrade from a cluster that uses `aws-standalone-co-0.0.1`.
+As you can see from the `.spec`, the `aws-standalone-co-0-1-0` template can be applied to a cluster that also uses
+the `aws-standalone-co-0-1-0` template, or it can be used as an upgrade from a cluster that uses `aws-standalone-co-0.0.2`.
 You wouldn't be able to use this template to update a cluster that uses any other `ClusterTemplate`.
 
 Similarly, the `AccessManagement` object must have properly configured `spec.accessRules` with a list of allowed 
 `ClusterTemplateChain` object names and their namespaces. For more information, see [Template Life Cycle Management](template-intro.md#template-life-cycle-management).
 
 > NOTE:  
-> Support for displaying all available `ClusterTemplates` for updates in the `ClusterDeployment` status is planned.
+> Support for displaying all available Cluster Templates for updates in the `ClusterDeployment` status is planned.
 
 <!-- TODO
 ## Scaling a Cluster 
@@ -241,10 +241,10 @@ Because a Kubernetes cluster is represented by a `ClusterDeployment`, when you d
 k0rdent deletes the cluster. For example:
 
 ```shell
-kubectl delete clusterdeployment my-cluster-deployment -n kmc-system
+kubectl delete clusterdeployment my-cluster-deployment -n kcm-system
 ```
 ```console
 ClusterDeployment my-cluster-deployment deleted.
 ```
 
-It takes time to delete these resources.
+Note that it takes time to delete these resources.

@@ -1,8 +1,9 @@
 # Adopting an Existing Cluster
 
 Creating a new cluster isn't the only way to use k0rdent. Adopting an existing Kubernetes cluster enables you to 
-bring it under the k0rdent's management. This process is useful when you already have a running cluster but want 
-to centralize management and leverage k0rdent's capabilities, such as unified monitoring, configuration, and automation.
+bring it under k0rdent's management. This process is useful when you already have a running cluster but want 
+to centralize management and leverage k0rdent's capabilities, such as unified monitoring, configuration, and automation,
+but you don't want to redeploy your cluster.
 
 To adopt a cluster, k0rdent establishes communication between the management cluster (where kcm is installed) 
 and the target cluster. This requires proper credentials, network connectivity, and a standardized configuration. 
@@ -29,7 +30,7 @@ Follow these steps to adopt an existing cluster:
     > TIP:  
     > Double-check that your credentials have sufficient permissions to create resources on the target infrastructure.
 
-3. Configure the Adopted Cluster Template
+3. Configure the management cluster kubeconfig
 
     Set the `KUBECONFIG` environment variable to the path of your management cluster's kubeconfig file so you can 
     execute commands against the management cluster.
@@ -59,7 +60,7 @@ Follow these steps to adopt an existing cluster:
         <CONFIGURATION>
     ```
 
-    Replace placeholders like `<CLUSTER_NAME>`, `<NAMESPACE>`, `<VERSION>`, `<CREDENTIAL_NAME>`, and `<CONFIGURATION>` with actual values. The `dryRun` flag is useful for testing the configuration without making changes to the cluster. For more details, see the [Dry Run](appendix-dryrun.md) section.
+    Replace placeholders such as `<CLUSTER_NAME>`, `<NAMESPACE>`, `<VERSION>`, `<CREDENTIAL_NAME>`, and `<CONFIGURATION>` with actual values. The `dryRun` flag is useful for testing the configuration without making changes to the cluster. For more details, see the [Dry Run](appendix-dryrun.md) section.
 
     You can also get a list of the available templates with:
 
@@ -67,17 +68,18 @@ Follow these steps to adopt an existing cluster:
     kubectl get clustertemplate -n kcm-system
     ```
     ```console
-    NAMESPACE    NAME                            VALID
-    kcm-system   adopted-cluster-0-0-2           true
-    kcm-system   aws-eks-0-0-3                   true
-    kcm-system   aws-hosted-cp-0-0-4             true
-    kcm-system   aws-standalone-cp-0-0-5         true
-    kcm-system   azure-aks-0-0-2                 true
-    kcm-system   azure-hosted-cp-0-0-4           true
-    kcm-system   azure-standalone-cp-0-0-5       true
-    kcm-system   openstack-standalone-cp-0-0-2   true
-    kcm-system   vsphere-hosted-cp-0-0-5         true
-    kcm-system   vsphere-standalone-cp-0-0-5     true
+    NAME                            VALID
+    adopted-cluster-0-1-0           true
+    aws-eks-0-1-0                   true
+    aws-hosted-cp-0-1-0             true
+    aws-standalone-cp-0-1-0         true
+    azure-aks-0-1-0                 true
+    azure-hosted-cp-0-1-0           true
+    azure-standalone-cp-0-1-0       true
+    openstack-standalone-cp-0-1-0   true
+    vsphere-hosted-cp-0-1-0         true
+    vsphere-standalone-cp-0-1-0     true
+    ```
 
     Putting it all together, your YAML would look something like this:
 
@@ -88,7 +90,7 @@ Follow these steps to adopt an existing cluster:
       name: my-cluster
       namespace: kcm-system
     spec:
-      template: adopted-cluster-0-0-2
+      template: adopted-cluster-0-1-0
       credential: my-cluster-credential
       dryRun: false
       config: {}
@@ -121,7 +123,7 @@ When you adopt a cluster, k0rdent performs several actions:
 1. It validates the credentials and configuration provided in the `ClusterDeployment` object.
 2. It ensures network connectivity between the management cluster and the adopted cluster.
 3. It registers the adopted cluster within the k0rdent system, enabling it to be monitored and managed like 
-   any k0rdent-deployed cluster.
+    any k0rdent-deployed cluster.
 
 This process doesn't change the adopted cluster's existing workloads or configurations. Instead, it enhances your 
 ability to manage the cluster through k0rdent.

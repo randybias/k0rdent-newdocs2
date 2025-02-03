@@ -1,10 +1,10 @@
-# Creating and Deploying Applications
+# Using and Creating ServiceTemplates: Creating and Deploying Applications
 
 Deploying an application, like deploying a cluster, involves applying a template to the management cluster. Rather than a `ClusterTemplate`, however, applications are deployed using a `ServiceTemplate`.
 
 You can find more information on [Bringing Your Own Templates](template-byo.md)
-in theTemplate Guide, but this section gives you an idea of how to create a `ServiceTemplate`
-and use it to deploy an application to a k0rdent managed cluster.
+in the Template Guide, but this section gives you an idea of how to create a `ServiceTemplate`
+and use it to deploy an application to a k0rdent child cluster.
 
 The basic sequence looks like this:
 
@@ -96,7 +96,7 @@ The basic sequence looks like this:
     spec:
       config:
         clusterLabels: {}
-      template: aws-standalone-cp-0-0-3
+      template: aws-standalone-cp-0-1-0
       credential: aws-credential
       services:
         - template: project-ingress-nginx-4.11.3
@@ -113,4 +113,4 @@ The basic sequence looks like this:
     ```shell
     kubectl patch clusterdeployment my-managed-cluster -n my-target-namespace --type='merge' -p '{"spec":{"services":[{"template":"project-ingress-nginx-4.11.3","name":"ingress-nginx","namespace":"my-target-namespace"}]}}'
     ```
-    For more information on creating and using `ServiceTemplate`s, see the [User Guide](user-create-service.md).
+    For more information on creating and using `ServiceTemplate` objects, see the [User Guide](user-create-service.md).
