@@ -7,7 +7,7 @@ This chapter explains how that system works.
 
 In order to pass credentials to k0rdent so it can take action, the following has to happen:
 
-1. The lead platform engineer or whoever has access to the actual provider credentials creates a `Secret` that includes that information. For example, for an AWS cluster, it might look like this:
+1. The lead platform engineer, or whoever has access to the actual provider credentials, creates a `Secret` that includes that information. For example, for an AWS cluster, it might look like this:
 
     ```yaml
     apiVersion: v1
@@ -21,61 +21,61 @@ In order to pass credentials to k0rdent so it can take action, the following has
         SecretAccessKey: EXAMPLE_SECRET_ACCESS_KEY
     ```
 
-    Once this secret is created, it can be referenced without the user having access to the actual content, and thus the actual credentials.
+    Once this secret is created, it can be referenced without the user having access to the content, and thus the actual credentials.
 
 2. A provider-specific `ClusterIdentity` gets created. The `ClusterIdentity` references the `Secret` from step one. For example, for an AWS cluster, this object might look like this:
 
-	```yaml
-	kind: AWSClusterStaticIdentity
-	metadata:
-	  name: aws-cluster-identity
-	spec:
-	  secretRef: aws-cluster-identity-secret
-	  allowedNamespaces:
-	    selector:
-		  matchLabels: {}
-	```
+    ```yaml
+    kind: AWSClusterStaticIdentity
+    metadata:
+      name: aws-cluster-identity
+    spec:
+      secretRef: aws-cluster-identity-secret
+      allowedNamespaces:
+        selector:
+        matchLabels: {}
+    ```
 
     Notice that it references the `aws-cluster-identity-secret` we created earlier. It also specifies the namespaces in which this `ClusterIdentity` can be used. (In this case there are no restrictions.)
 
 2. Now you can create a `Credential` object that references the `ClusterIdentity`, thus making the credentials available and specifying the namespaces where it can be used. Continuing our AWS example:
 
-	```yaml
-	apiVersion: k0rdent.mirantis.com/v1alpha1
-	kind: Credential
-	metadata:
-	  name: aws-cluster-credential
-	  namespace: kcm-system
-	spec:
-  	  description: "Credential Example"
-	  identityRef:
-	    apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
-	    kind: AWSClusterStaticIdentity
-	    name: aws-cluster-identity
-	```
-    Notice that it references the previous `ClusterIdentity` (in this case an `AWSClusterStaticIdentity`). Also notice that you can use the `.spec.description` field to add additional text about the `Credential` so users can choose if multiple `Credential`s are available.
+    ```yaml
+    apiVersion: k0rdent.mirantis.com/v1alpha1
+    kind: Credential
+    metadata:
+      name: aws-cluster-credential
+      namespace: kcm-system
+    spec:
+        description: "Credential Example"
+      identityRef:
+        apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+        kind: AWSClusterStaticIdentity
+        name: aws-cluster-identity
+    ```
+    Notice that it references the previous `ClusterIdentity` (in this case an `AWSClusterStaticIdentity`). Also notice that you can use the `.spec.description` field to add additional text about the `Credential` so users can choose if multiple `Credential` objects are available.
 
 3. Finally, when you create a `ClusterDeployment`, you reference the `Credential` object in order to enable k0rdent to pass that information to the infrastructure provider:
 
     ```yaml
-	apiVersion: k0rdent.mirantis.com/v1alpha1
-	kind: ClusterDeployment
-	metadata:
-      name: my-aws-clusterdeployment
-	  namespace: kcm-system
-	spec:
-	  template: aws-standalone-cp-0-0-5
-	  credential: aws-cluster-credential
-      config:
-	    clusterLabels: {}
-	    region: us-east-2
-	    controlPlane:
-		  instanceType: t3.small
-	    worker:
-		  instanceType: t3.small
-	```
+    apiVersion: k0rdent.mirantis.com/v1alpha1
+    kind: ClusterDeployment
+    metadata:
+        name: my-aws-clusterdeployment
+      namespace: kcm-system
+    spec:
+      template: aws-standalone-cp-0-1-0
+      credential: aws-cluster-credential
+        config:
+        clusterLabels: {}
+        region: us-east-2
+        controlPlane:
+        instanceType: t3.small
+        worker:
+        instanceType: t3.small
+    ```
 
-    As you can see, the user doesn't have to pass anything but the name of the `Credential` in order to deploy the cluster. So all an administrator has to do is add these `Credential`s to the system and make them available. Note also that the `Credential` has to be available in the `ClusterDeployment`s namespace. (See [Cloud provider credentials propagation](#cloud-provider-credentials-propagation) for more information on how that works. )
+    As you can see, the user doesn't have to pass anything but the name of the `Credential` in order to deploy the cluster. So all an administrator has to do is add these `Credential`objects to the system and make them available. Note also that the `Credential` has to be available in the `ClusterDeployment`s namespace. (See [Cloud provider credentials propagation](#cloud-provider-credentials-propagation) for more information on how that works. )
     
 4. Optionally, certain credentials MAY be propagated to the `ClusterDeployment` after it is created.
 
@@ -97,17 +97,17 @@ In order to pass credentials to k0rdent so it can take action, the following has
 ## Cloud provider credentials propagation
 
 Some components in the cluster deployment require cloud provider credentials to be
-passed for proper functioning. As an example, Cloud Controller Manager (CCM)
+passed for proper functioning. For example, Cloud Controller Manager (CCM)
 requires provider credentials to create load balancers and provide other
 functionality.
 
-This poses a challenge of credentials delivery. Currently `cloud-init` is used
-to pass all necessary credentials. This approach has several problems:
+This poses a challenge for credentials delivery. Currently `cloud-init` is used
+to pass all necessary credentials, but this approach has several problems:
 
-- Credentials stored unencrypted in the instance metadata.
-- Rotation of the credentials is impossible without complete instance
+* Credentials are stored unencrypted in the instance metadata.
+* Rotation of the credentials is impossible without complete instance
   redeployment.
-- Possible leaks, since credentials are copied to several `Secret` objects
+* Possible leaks, since credentials are copied to several `Secret` objects
   related to bootstrap data.
 
 To solve these problems in k0rdent we're using the Sveltos controller, which can
@@ -123,8 +123,8 @@ This eliminates the need to pass anything credentials-related to `cloud-init`
 and makes it possible to rotate credentials automatically without the need for
 instance redeployment.
 
-Also this automation makes it possible to separate roles and responsibilities
-where only the lead engineer has access to credentials and other engineers can
+Also, this automation makes it possible to separate roles and responsibilities
+so that only the lead engineer has access to credentials, and other engineers can
 use them without seeing values and even any access to underlying
 infrastructure platform.
 
@@ -150,28 +150,28 @@ resources can be found in the [CRD Reference](https://cluster-api-aws.sigs.k8s.i
 
 #### Azure
 
-Currently the Cluster API Azure (CAPZ) provider creates `azure.json` `Secret`s in the
+Currently the Cluster API Azure (CAPZ) provider creates `azure.json` `Secret` objects in the
 same namespace as the `Cluster` object. By design they should be referenced in the
 `cloud-init` YAML later during bootstrap process.
 
-In k0rdent these Secrets aren't used and will not be added to the
+In k0rdent these `Secret` objects aren't used and will not be added to the
 `cloud-init`, but engineers can access them without restrictions, which is a security issue.
 
 #### OpenStack
 
 For OpenStack, CAPO relies on a `clouds.yaml` file.
 In k0rdent, you provide this file in a Kubernetes `Secret` that references OpenStack credentials
-(ideally application credentials for enhanced security). During reconciliation, kcm
+(ideally application credentials for enhanced security). During reconciliation, KCM
 automatically generates the cloud-config required by OpenStack’s cloud-controller-manager.
 
-For more details, refer to the [kcm OpenStack Credential Propagation doc](https://github.com/k0rdent/kcm/blob/main/docs/dev.md#openstack).
+For more details, refer to the [KCM OpenStack Credential Propagation doc](https://github.com/k0rdent/kcm/blob/main/docs/dev.md#openstack).
 
 
 #### Adopted clusters
 
 Credentials for adopted clusters consist of a secret containing a kubeconfig file to access the existing kubernetes cluster. 
 The kubeconfig file for the cluster should be contained in the value key of the secret object. The following is an example of 
-a secret which contains the kubeconfig for an adopted cluster. To create this secret, first create or obtain a kubeconfig file 
+a secret that contains the kubeconfig for an adopted cluster. To create this secret, first create or obtain a kubeconfig file 
 for the cluster that is being adopted and then run the following command to base64 encode it:
 
 ```shell
@@ -202,12 +202,12 @@ Each access rule specifies:
 
 <!-- TODO show an example of the AccessManagement object. -->
 
-The kcm controller copies the specified `Credential` objects from the `system` namespace to the target
+The KCM controller copies the specified `Credential` objects from the `system` namespace to the target
 namespaces based on the `accessRules` in the `AccessManagement` spec.
 
 > INFO:
-> Access rules can also include `Cluster` and `Service` TemplateChains (`clusterTemplateChains` and
-> `serviceTemplateChains`) to distribute templates to target namespaces.
+> Access rules can also include `Cluster` and `Service` Template Chains (`ClusterTemplateChain` objects and
+> `ServiceTemplateChain` objects) to distribute templates to target namespaces.
 > For more details, read: [Template Life Cycle Management](template-intro.md).
 
 ### How to Configure Credential Distribution

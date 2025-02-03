@@ -4,37 +4,35 @@ Upgrading k0rdent involves making upgrades to the `Management` object. To do tha
 
 1. Create a new `Release` object
 
-    Start by creating a `Release` object in the management cluster the points to the desired version. You can see
+    Start by creating a `Release` object in the management cluster that points to the desired version. You can see
     available versions at [https://github.com/k0rdent/kcm/releases](https://github.com/k0rdent/kcm/releases).  The actual
     `Release` object includes information on the templates and resources that are available, as well as the version of the
-    Kubernetes Cluster API.  For example, the v0.0.7 `Release` object looks like this:
+    Kubernetes Cluster API.  For example, the v0.1.0 `Release` object looks like this:
 
     ```yaml
     apiVersion: k0rdent.mirantis.com/v1alpha1
     kind: Release
     metadata:
-      name: kcm-0-0-7
-    annotations:
-      helm.sh/resource-policy: keep
-    labels:
-      k0rdent.mirantis.com/component: kcm
+      name: kcm-0-1-0
+      annotations:
+        helm.sh/resource-policy: keep
     spec:
-      version: 0.0.7
+      version: 0.1.0
       kcm:
-        template: kcm-0-0-7
+        template: kcm-0-1-0
       capi:
-        template: cluster-api-0-0-6
+        template: cluster-api-0-1-0
       providers:
         - name: k0smotron
-          template: k0smotron-0-0-6
+          template: k0smotron-0-1-0
         - name: cluster-api-provider-azure
-          template: cluster-api-provider-azure-0-0-4
+          template: cluster-api-provider-azure-0-1-0
         - name: cluster-api-provider-vsphere
-          template: cluster-api-provider-vsphere-0-0-5
+          template: cluster-api-provider-vsphere-0-1-0
         - name: cluster-api-provider-aws
-          template: cluster-api-provider-aws-0-0-4
+          template: cluster-api-provider-aws-0-1-0
         - name: cluster-api-provider-openstack
-          template: cluster-api-provider-openstack-0-0-1
+          template: cluster-api-provider-openstack-0-1-0
         - name: projectsveltos
           template: projectsveltos-0-45-0
     ```
@@ -42,7 +40,7 @@ Upgrading k0rdent involves making upgrades to the `Management` object. To do tha
     Thankfully, you don't have to build these YAML files yourself. Once you've chosen a release, you can go ahead and create the release object by referencing the YAML file online, as in:
 
     ```shell
-    VERSION=v0.0.7
+    VERSION=v0.1.0
     kubectl create -f https://github.com/k0rdent/kcm/releases/download/${VERSION}/release.yaml
     ```
 
@@ -58,6 +56,7 @@ Upgrading k0rdent involves making upgrades to the `Management` object. To do tha
     NAME        AGE
     kcm-0-0-6   71m
     kcm-0-0-7   65m
+    kcm-0-1-0   12m
     ```
 
 3. Patch the `Management` object with the new `Release`
@@ -65,7 +64,7 @@ Upgrading k0rdent involves making upgrades to the `Management` object. To do tha
     Update the `spec.release` field in the `Management` object to point to the new release. Replace `<release-name>` with the name of your desired release:
 
     ```shell
-    RELEASE_NAME=kcm-0-0-7
+    RELEASE_NAME=kcm-0-1-0
     kubectl patch management.kcm kcm --patch "{\"spec\":{\"release\":\"${RELEASE_NAME}\"}}" --type=merge
     ```
 
@@ -77,5 +76,5 @@ Upgrading k0rdent involves making upgrades to the `Management` object. To do tha
     ```shell
     kubectl get management.kcm kcm
     NAME   READY   RELEASE     AGE
-    kcm    True    kcm-0-0-7   4m34s
+    kcm    True    kcm-0-1-0   4m34s
     ```
