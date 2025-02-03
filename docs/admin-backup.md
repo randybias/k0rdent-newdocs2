@@ -21,7 +21,7 @@ The main goal of the feature is to provide:
   into an offsite location.
 * **Restore:** The ability to create configuration objects from a specific Management Backup in order to create a management
   cluster in the same state that existed at the time of backup without (re)provisioning of cloud resources.
-* **Disaster Recovery:** The ability to restore k0rdent on another management cluster, plus ensuring that clusters are not 
+* **Disaster Recovery:** The ability to restore k0rdent on another management cluster, plus ensuring that clusters are not
   recreated or lost.
 * **Rollback:** The possibility to manually restore after a specific event, such as a failed k0rdent upgrade
 
@@ -30,7 +30,7 @@ The main goal of the feature is to provide:
 [`Velero`](https://velero.io/) is an open-source tool that simplifies backing up and restoring clusters as well as individual resources. It seamlessly integrates into the k0rdent management environment to provide robust disaster recovery capabilities.
 
 The `velero` instance is part of the Helm chart that installs k0rdent, which means that it
-can be customized if necessary. (You can find information on customizing Velero [below](#customization))
+can be [customized](#velero-installation) if necessary.
 
 k0rdent manages the schedule and is responsible for collecting data to be included in a backup.
 
@@ -42,36 +42,36 @@ Backups should be scheduled on a regular basis, depending on how often informati
 
 Before you create a scheduled backup, you need to perform a few preparatory steps:
 
-  1. If no `velero` plugins have been installed as suggested
-     in the [corresponding section](#customization),
-     install it by modifying the `Management` object:
+1. If no `velero` plugins have been installed as suggested
+   in the [corresponding section](#velero-installation),
+   install it by modifying the `Management` object:
 
-      ```yaml
-      apiVersion: k0rdent.mirantis.com/v1alpha1
-      kind: Management
-      metadata:
-        name: kcm
-      spec:
-        # ... 
-        core:
-          kcm:
-            config:
-              velero:
-                initContainers:
-                - name: velero-plugin-for-<provider-name>
-                  image: velero/velero-plugin-for-<provider-name>:<provider-plugin-tag>
-                  imagePullPolicy: IfNotPresent
-                  volumeMounts:
-                  - mountPath: /target
-                    name: plugins
-        # ...
-      ```
+    ```yaml
+    apiVersion: k0rdent.mirantis.com/v1alpha1
+    kind: Management
+    metadata:
+      name: kcm
+    spec:
+      # ... 
+      core:
+        kcm:
+          config:
+            velero:
+              initContainers:
+              - name: velero-plugin-for-<provider-name>
+                image: velero/velero-plugin-for-<provider-name>:<provider-plugin-tag>
+                imagePullPolicy: IfNotPresent
+                volumeMounts:
+                - mountPath: /target
+                  name: plugins
+      # ...
+    ```
 
- 2. Prepare a cloud storage location, such as an Amazon S3 bucket, to which to save backups.
+1. Prepare a cloud storage location, such as an Amazon S3 bucket, to which to save backups.
 
- 3. Create a [`BackupStorageLocation`](https://velero.io/docs/v1.15/api-types/backupstoragelocation/)
-    object referencing a `Secret` with credentials to access the cloud storage
-    (if the multiple credentials feature is supported by the plugin).
+1. Create a [`BackupStorageLocation`](https://velero.io/docs/v1.15/api-types/backupstoragelocation/)
+   object referencing a `Secret` with credentials to access the cloud storage
+   (if the multiple credentials feature is supported by the plugin).
 
     For example, if you are using Amazon S3, your `BackupStorageLocation` and the related `Secret` might look like this:
 
@@ -83,7 +83,7 @@ Before you create a scheduled backup, you need to perform a few preparatory step
       # [default]
       # aws_access_key_id = EXAMPLE_ACCESS_KEY_ID
       # aws_secret_access_key = EXAMPLE_SECRET_ACCESS_KEY
-           cloud: W2RlZmF1bHRdCmF3c19hY2Nlc3Nfa2V5X2lkID0XXXXXXXXXXXXXXXXXXXXyZXRfYWNjZXNzX2tleSA9IEVYQU1QTEVfU0VDUkVUX0FDQ0VTU19LRVkKICA=
+      cloud: WW2RlZmF1bHRdCmF3c19hY2Nlc3Nfa2V5X2lkID0gRVhBTVBMRV9BQ0NFU1NfS0VZX0lECmF3c19zZWNyZXRfYWNjZXNzX2tleSA9IEVYQU1QTEVfU0VDUkVUX0FDQ0VTU19LRVkKICA=
     kind: Secret
     metadata:
       name: cloud-credentials
@@ -113,8 +113,8 @@ You can get more information on how to build these objects at the [official Vele
 ### Create a Management Backup
 
 Periodic backups are handled by a `ManagementBackup` object, which uses a [Cron](https://en.wikipedia.org/wiki/Cron) expression
-for its `.spec.schedule` field. 
-If you don't set the `.spec.schedule` field, Velero will instead work with  [backup on demand](#management-backup-on-demand).
+for its `.spec.schedule` field.
+If the `.spec.schedule` field is not set, a [backup on demand](#management-backup-on-demand) will be created instead.
 
 Optionally, set the name of the `BackupStorageLocation` `.spec.backup.storageLocation`.
 The default location is the `BackupStorageLocation` object with `.spec.default` set to `true`.
@@ -168,14 +168,17 @@ k0rdent.mirantis.com/component="kcm"
 
 ## Restoration
 
-> NOTE: 
+> NOTE:
 > Please refer to the
 > [official migration documentation](https://velero.io/docs/v1.15/migration-case/#before-migrating-your-cluster)
 > to familiarize yourself with potential limitations of the Velero backup system.
 
 In the event of disaster, you can restore from a backup by doing the following:
 
-1. Create a clean k0rdent installation, including `velero` and [its plugins](#customization). Specifically, you want to **avoid** creating a `Management` object and similar objects because they will be part of your restored cluster. You can remove these objects after installation, but you can also install k0rdent without them in the first place:
+1. Create a clean k0rdent installation, including `velero` and [its plugins](#velero-installation).
+   Specifically, you want to **avoid** creating a `Management` object and similar objects because they
+   will be part of your restored cluster. You can remove these objects after installation, but you
+   can also install k0rdent without them in the first place:
 
     ```bash
     helm install kcm oci://ghcr.io/k0rdent/kcm/charts/kcm \
@@ -192,9 +195,11 @@ In the event of disaster, you can restore from a backup by doing the following:
      --set velero.initContainers[0].volumeMounts[0].name=plugins
     ```
 
-2. Create the `BackupStorageLocation`/`Secret` objects that were created during the [preparation stage](#preparation) of creating a backup (preferably the same depending on a plugin).
+1. Create the `BackupStorageLocation`/`Secret` objects that were created during the [preparation stage](#preparation)
+   of creating a backup (preferably the same depending on a plugin).
 
-1. Restore the `kcm` system creating the [`Restore`](https://velero.io/docs/v1.15/api-types/restore/) object. Note that it is important to set the `.spec.existingResourcePolicy` field value to `update`:
+1. Restore the `kcm` system creating the [`Restore`](https://velero.io/docs/v1.15/api-types/restore/) object.
+   Note that it is important to set the `.spec.existingResourcePolicy` field value to `update`:
 
     ```yaml
     apiVersion: velero.io/v1
@@ -226,10 +231,10 @@ default to avoid logical dependencies on one or another provider, and to create 
 
 The following resources should be excluded from the `Restore` object:
 
-- `natgateways.network.azure.com`
-- `resourcegroups.resources.azure.com`
-- `virtualnetworks.network.azure.com`
-- `virtualnetworkssubnets.network.azure.com`
+* `natgateways.network.azure.com`
+* `resourcegroups.resources.azure.com`
+* `virtualnetworks.network.azure.com`
+* `virtualnetworkssubnets.network.azure.com`
 
 Due to the [webhook conversion](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definition-versioning/#webhook-conversion),
 objects of these resources cannot be restored, and they will
@@ -260,8 +265,8 @@ spec:
 
 The following resources should be excluded from the `Restore` object:
 
-- `mutatingwebhookconfiguration.admissionregistration.k8s.io`
-- `validatingwebhookconfiguration.admissionregistration.k8s.io`
+* `mutatingwebhookconfiguration.admissionregistration.k8s.io`
+* `validatingwebhookconfiguration.admissionregistration.k8s.io`
 
 Due to the [Velero Restoration Order](https://velero.io/docs/v1.15/restore-reference/#restore-order),
 some of the `CAPV` core objects cannot be restored,
@@ -332,15 +337,16 @@ to simplify querying if required.
 If during the `kcm` upgrade a failure happens, a rollback operation
 should be performed to restore the `kcm` to its before-the-upgrade state:
 
-1. Follow the first 2 steps from the [restoration section](#restoration), creating a clean `kcm` installation and `BackupStorageLocation`/`Secret`.
+1. Follow the first 2 steps from the [restoration section](#restoration), creating a clean `kcm`
+   installation and `BackupStorageLocation`/`Secret`.
 
     > WARNING:
     > Please consider the [restoration caveats](#caveats) section before proceeding.
 
-1.  Create the `ConfigMap` object with patches to revert the `Management`
-    `.spec.release`, substitute the `<version-before-upgrade>` with
-    the version of `kcm` before the upgrade, and create the `Restore` object,
-    propagating the `ConfigMap` to it:
+1. Create the `ConfigMap` object with patches to revert the `Management`
+   `.spec.release`, substitute the `<version-before-upgrade>` with
+   the version of `kcm` before the upgrade, and create the `Restore` object,
+   propagating the `ConfigMap` to it:
 
     ```yaml
     ---
@@ -383,7 +389,9 @@ should be performed to restore the `kcm` to its before-the-upgrade state:
 The credentials stored in backups can and will get stale,
 so a proper rotation should be considered beforehand.
 
-All `velero` caveats and limitations are transitively implied in `k0rdent`. In particular, that means no backup encryption is provided until it is implemented by a `velero` plugin that supports encryption and cloud storage backups.
+All `velero` caveats and limitations are transitively implied in `k0rdent`. In particular, that
+means no backup encryption is provided until it is implemented by a `velero` plugin that supports
+encryption and cloud storage backups.
 
 ## Velero Backups / Restores deletion
 
@@ -442,11 +450,11 @@ from the cluster after `Backup` has been deleted.
 
 For reference, follow the [official documentation](https://velero.io/docs/v1.15/backup-reference/#deleting-backups).
 
-# Customization
+## Customization
 
 This section covers different topics of customization regarding backing up and restoring k0rdent.
 
-## Velero installation
+### Velero installation
 
 The Velero helm chart is supplied with the
 [k0rdent helm chart](https://vmware-tanzu.github.io/helm-charts/)
@@ -457,9 +465,10 @@ and is enabled by default. There are 2 ways of customizing the chart values:
     > NOTE:
     > Only a plugin is required during restoration; the other parameters
     > are optional.
-    
+
     For example, this command installs k0rdent via `helm install` with a configured plugin, `BackupStorageLocation`
     and propagated credentials:
+
     ```shell
     helm install kcm oci://ghcr.io/k0rdent/kcm/charts/kcm \
      --version <version> \
@@ -478,12 +487,14 @@ and is enabled by default. There are 2 ways of customizing the chart values:
      --set velero.initContainers[0].volumeMounts[0].name=plugins
     ```
 
-2. Create or modify the existing `Management` object in the `.spec.config.kcm`.
+1. Create or modify the existing `Management` object in the `.spec.config.kcm`.
+
     > NOTE:
     > Only a plugin is required during restoration; the other parameters
     > are optional.
-    
+
     For example, this is a `Management` object with a configured plugin and enabled metrics:
+
     ```yaml
     apiVersion: k0rdent.mirantis.com/v1alpha1
     kind: Management
@@ -509,7 +520,7 @@ and is enabled by default. There are 2 ways of customizing the chart values:
 
 To fully disable `velero`, set the `velero.enabled` parameter to `false`.
 
-## Schedule Expression Format
+### Schedule Expression Format
 
 The `ManagementBackup` `.spec.schedule` field accepts a correct
 [Cron](https://en.wikipedia.org/wiki/Cron) expression,
@@ -520,11 +531,11 @@ and an extra definition `@every` with a number and a valid time unit
 
 The following list contains acceptable `.spec.schedule` example values:
 
-- `0 */1 * * *` (standard Cron expression)
-- `@hourly` (nonstandard predefined definition)
-- `@every 1h` (extra definition)
+* `0 */1 * * *` (standard Cron expression)
+* `@hourly` (nonstandard predefined definition)
+* `@every 1h` (extra definition)
 
-## Putting Extra Objects in a Management Backup
+### Putting Extra Objects in a Management Backup
 
 If you need to back up objects other than those [backed up by default](admin-backup.md#whats-included-in-the-management-backup),
 you can add the label `k0rdent.mirantis.com/component="kcm"` to these objects.
