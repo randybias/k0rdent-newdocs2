@@ -66,7 +66,7 @@ nav:
   - Administrator Guide:
     - Before you start: admin-before.md
     - Installing k0rdent: admin-installation.md
-    - Prepare k0rdent to create managed clusters on multiple providers: admin-prepare.md
+    - Prepare k0rdent to create child clusters on multiple providers: admin-prepare.md
     - Creating standalone clusters: admin-creating-clusters.md
     - Adopting clusters: admin-adopting-clusters.md
     - Hosted control planes: admin-hosted-control-planes.md

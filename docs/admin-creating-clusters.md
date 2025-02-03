@@ -1,4 +1,4 @@
-# Creating and lifecycle-managing managed clusters
+# Creating and lifecycle-managing child clusters
 
 Once you've installed k0rdent, you can use it to create, manage, update and even upgrade clusters.
 

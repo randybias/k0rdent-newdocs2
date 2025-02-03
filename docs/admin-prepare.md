@@ -1,15 +1,15 @@
-# Prepare k0rdent to create managed clusters on multiple providers
+# Prepare k0rdent to create child clusters on multiple providers
 
 Managed clusters can be hosted on a number of different platforms. At the time of this writing, those platforms include:
 
-- Amazon Web Services
-- Microsoft Azure
+- Amazon Web Services (EC2 and EKS)
+- Microsoft Azure (self-managed and AKS)
 - OpenStack
 - VMware
 
 ## AWS
 
-k0rdent is able to deploy managed clusters as both EC2-based Kubernetes clusters and EKS clusters. In both cases, you'll need to create the relevant credentials, and to do that you'll need to configure an IAM user. Follow these steps to make it possible to deploy to AWS:
+k0rdent can deploy managed clusters as both EC2-based Kubernetes clusters and EKS clusters. In both cases, you'll need to create the relevant credentials, and to do that you'll need to configure an IAM user. Follow these steps to make it possible to deploy to AWS:
 
 1. Install k0rdent
 
@@ -17,7 +17,7 @@ k0rdent is able to deploy managed clusters as both EC2-based Kubernetes clusters
 
 2. Install `clusterawsadm`
 
-    k0rdent uses the Cluster API (CAPI) to marshal clouds and infrastructures. For AWS, this means using the components from the Cluster API Provider AWS (CAPA) project. clusterawsadm, a CLI tool created by CAPA project, helps with AWS-specific tasks such as creating IAM roles and policies, as well as credential configuration. To install clusterawsadm on Ubuntu on x86 hardware, execute these commands:
+    k0rdent uses the Cluster API (CAPI) to marshal clouds and infrastructures. For AWS, this means using the components from the Cluster API Provider AWS (CAPA) project. `clusterawsadm`, a CLI tool created by CAPA project, helps with AWS-specific tasks such as creating IAM roles and policies, as well as credential configuration. To install clusterawsadm on Ubuntu on x86 hardware, execute these commands:
 
     ```shell
     curl -LO https://github.com/kubernetes-sigs/cluster-api-provider-aws/releases/download/v2.7.1/clusterawsadm-linux-amd64
@@ -28,7 +28,7 @@ k0rdent is able to deploy managed clusters as both EC2-based Kubernetes clusters
 
     Next you'll need to create the IAM policies and service account k0rdent will use to take action within the AWS infrastructure. (Note that you only need to do this once.)
 
-    The first step is to crete the IAM CloudFormation stack based on your admin user. Start by specifying the environment variables clusterawsadm will use as AWS credentials:
+    The first step is to create the IAM CloudFormation stack based on your admin user. Start by specifying the environment variables `clusterawsadm` will use as AWS credentials:
 
     ```shell
     export AWS_REGION=<EXAMPLE_AWS_REGION>
@@ -39,278 +39,279 @@ k0rdent is able to deploy managed clusters as both EC2-based Kubernetes clusters
 
 4. Create the IAM CloudFormation stack
 
-	Now use `clusterawsadm` to create the IAM CloudFormation stack:
+  	Now use `clusterawsadm` to create the IAM CloudFormation stack:
 
-	```shell
-	clusterawsadm bootstrap iam create-cloudformation-stack
-	```
+    ```shell
+	  clusterawsadm bootstrap iam create-cloudformation-stack
+	  ```
 	
 5. Install the AWS CLI
  
-	With the stack in place you can create the AWS IAM user. You can do this in the UI, but it's also possible to do it from the command line using the aws CLI tool.  Start by installing it, if you haven't already:
+	  With the stack in place you can create the AWS IAM user. You can do this in the UI, but it's also possible to do it from the command line using the `aws` CLI tool.  Start by installing it, if you haven't already:
 
-	```shell
-	sudo apt install unzip
-	curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" 
-	unzip awscliv2.zip 
-	sudo ./aws/install
-	```
+    ```shell
+    sudo apt install unzip
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" 
+    unzip awscliv2.zip 
+    sudo ./aws/install
+    ```
 
-	The tool recognizes the environment variables you created earlier, so there's no need to login.
+  	The tool recognizes the environment variables you created earlier, so there's no need to login.
 
 6. Create the IAM user. 
 
-	The actual `user-name` parameter is arbitrary; you can specify it as anything you like:
+	  The actual `user-name` parameter is arbitrary; you can specify it as anything you like:
 
-	```shell
-	aws iam create-user --user-name k0rdentQuickstart
-	```
-	```console
-	{
-	  "User": {
-		  "Path": "/",
-		  "UserName": "k0rdentQuickstart",
-		  "UserId": "EXAMPLE_USER_ID",
-		  "Arn": "arn:aws:iam::FAKE_ARN_123:user/k0rdentQuickstart",
-		  "CreateDate": "2025-01-18T08:15:27+00:00"
-	  }
-	}
-	```
+    ```shell
+    aws iam create-user --user-name k0rdentUser
+    ```
+    ```console
+    {
+      "User": {
+        "Path": "/",
+        "UserName": "k0rdentUser",
+        "UserId": "EXAMPLE_USER_ID",
+        "Arn": "arn:aws:iam::FAKE_ARN_123:user/k0rdentUser",
+        "CreateDate": "2025-01-18T08:15:27+00:00"
+      }
+    }
+    ```
 
 7. Assign the relevant policies
  
-	You'll need to assign the following policies to the user you just created:
+    You'll need to assign the following policies to the user you just created:
 
-	```shell
-	control-plane.cluster-api-provider-aws.sigs.k8s.io
-	controllers.cluster-api-provider-aws.sigs.k8s.io
-	nodes.cluster-api-provider-aws.sigs.k8s.io
-	```
-	To do that, you'll need the ARNs for each policy.  You can get them with the `list-policies` command, as in:
+    ```shell
+    control-plane.cluster-api-provider-aws.sigs.k8s.io
+    controllers.cluster-api-provider-aws.sigs.k8s.io
+    nodes.cluster-api-provider-aws.sigs.k8s.io
+    ```
+    To do that, you'll need the ARNs for each policy.  You can get them with the `list-policies` command, as in:
 
-	```shell
-	aws iam list-policies --scope Local
-	```
-	```console
-	{
-	  "Policies": [
-		  {
-			  "PolicyName": "controllers-eks.cluster-api-provider-aws.sigs.k8s.io",
-			  "PolicyId": "ANPA22CF4NNF3VUDTMH3N",
-			  "Arn": "arn:aws:iam::FAKE_ARN_123:policy/controllers-eks.cluster-api-provider-aws.sigs.k8s.io",
-			  "Path": "/",
-			  "DefaultVersionId": "v1",
-			  "AttachmentCount": 2,
-			  "PermissionsBoundaryUsageCount": 0,
-			  "IsAttachable": true,
-			  "CreateDate": "2025-01-01T18:47:43+00:00",
-			  "UpdateDate": "2025-01-01T18:47:43+00:00"
-		  },
-		  {
-			  "PolicyName": "nodes.cluster-api-provider-aws.sigs.k8s.io",
-			  "PolicyId": "ANPA22CF4NNF5TAKL44PU",
-			  "Arn": "arn:aws:iam::FAKE_ARN_123:policy/nodes.cluster-api-provider-aws.sigs.k8s.io",
-			  "Path": "/",
-			  "DefaultVersionId": "v1",
-			  "AttachmentCount": 3,
-			  "PermissionsBoundaryUsageCount": 0,
-			  "IsAttachable": true,
-			  "CreateDate": "2025-01-01T18:47:44+00:00",
-			  "UpdateDate": "2025-01-01T18:47:44+00:00"
-		  },
-		  {
-			  "PolicyName": "controllers.cluster-api-provider-aws.sigs.k8s.io",
-			  "PolicyId": "ANPA22CF4NNFVO6OHIQOE",
-			  "Arn": "arn:aws:iam::FAKE_ARN_123:policy/controllers.cluster-api-provider-aws.sigs.k8s.io",
-			  "Path": "/",
-			  "DefaultVersionId": "v1",
-			  "AttachmentCount": 3,
-			  "PermissionsBoundaryUsageCount": 0,
-			  "IsAttachable": true,
-			  "CreateDate": "2025-01-01T18:47:43+00:00",
-			  "UpdateDate": "2025-01-01T18:47:43+00:00"
-		  },
-		  {
-			  "PolicyName": "control-plane.cluster-api-provider-aws.sigs.k8s.io",
-			  "PolicyId": "ANPA22CF4NNFY4FJ3DA2E",
-			  "Arn": "arn:aws:iam::FAKE_ARN_123:policy/control-plane.cluster-api-provider-aws.sigs.k8s.io",
-			  "Path": "/",
-			  "DefaultVersionId": "v1",
-			  "AttachmentCount": 2,
-			  "PermissionsBoundaryUsageCount": 0,
-			  "IsAttachable": true,
-			  "CreateDate": "2025-01-01T18:47:43+00:00",
-			  "UpdateDate": "2025-01-01T18:47:43+00:00"
-		  }
-	  ]
-	}
-	```
+    ```shell
+    aws iam list-policies --scope Local
+    ```
+    ```console
+    {
+      "Policies": [
+        {
+          "PolicyName": "controllers-eks.cluster-api-provider-aws.sigs.k8s.io",
+          "PolicyId": "ANPA22CF4NNF3VUDTMH3N",
+          "Arn": "arn:aws:iam::FAKE_ARN_123:policy/controllers-eks.cluster-api-provider-aws.sigs.k8s.io",
+          "Path": "/",
+          "DefaultVersionId": "v1",
+          "AttachmentCount": 2,
+          "PermissionsBoundaryUsageCount": 0,
+          "IsAttachable": true,
+          "CreateDate": "2025-01-01T18:47:43+00:00",
+          "UpdateDate": "2025-01-01T18:47:43+00:00"
+        },
+        {
+          "PolicyName": "nodes.cluster-api-provider-aws.sigs.k8s.io",
+          "PolicyId": "ANPA22CF4NNF5TAKL44PU",
+          "Arn": "arn:aws:iam::FAKE_ARN_123:policy/nodes.cluster-api-provider-aws.sigs.k8s.io",
+          "Path": "/",
+          "DefaultVersionId": "v1",
+          "AttachmentCount": 3,
+          "PermissionsBoundaryUsageCount": 0,
+          "IsAttachable": true,
+          "CreateDate": "2025-01-01T18:47:44+00:00",
+          "UpdateDate": "2025-01-01T18:47:44+00:00"
+        },
+        {
+          "PolicyName": "controllers.cluster-api-provider-aws.sigs.k8s.io",
+          "PolicyId": "ANPA22CF4NNFVO6OHIQOE",
+          "Arn": "arn:aws:iam::FAKE_ARN_123:policy/controllers.cluster-api-provider-aws.sigs.k8s.io",
+          "Path": "/",
+          "DefaultVersionId": "v1",
+          "AttachmentCount": 3,
+          "PermissionsBoundaryUsageCount": 0,
+          "IsAttachable": true,
+          "CreateDate": "2025-01-01T18:47:43+00:00",
+          "UpdateDate": "2025-01-01T18:47:43+00:00"
+        },
+        {
+          "PolicyName": "control-plane.cluster-api-provider-aws.sigs.k8s.io",
+          "PolicyId": "ANPA22CF4NNFY4FJ3DA2E",
+          "Arn": "arn:aws:iam::FAKE_ARN_123:policy/control-plane.cluster-api-provider-aws.sigs.k8s.io",
+          "Path": "/",
+          "DefaultVersionId": "v1",
+          "AttachmentCount": 2,
+          "PermissionsBoundaryUsageCount": 0,
+          "IsAttachable": true,
+          "CreateDate": "2025-01-01T18:47:43+00:00",
+          "UpdateDate": "2025-01-01T18:47:43+00:00"
+        }
+      ]
+    }
+    ```
 
-	Now you can add the policies using the `attach-user-policy` command and the ARNs you retrieved in the previous step:
+    Now you can add the policies using the `attach-user-policy` command and the ARNs you retrieved in the previous step:
 
-	```shell
-	aws iam attach-user-policy --user-name k0rdentQuickstart --policy-arn arn:aws:iam::FAKE_ARN_123:policy/controllers-eks.cluster-api-provider-aws.sigs.k8s.io
-	aws iam attach-user-policy --user-name k0rdentQuickstart --policy-arn arn:aws:iam::FAKE_ARN_123:policy/controllers.cluster-api-provider-aws.sigs.k8s.io
-	aws iam attach-user-policy --user-name k0rdentQuickstart --policy-arn arn:aws:iam::FAKE_ARN_123:policy/control-plane.cluster-api-provider-aws.sigs.k8s.io
-    aws iam attach-user-policy --user-name k0rdentQuickstart --policy-arn arn:aws:iam::FAKE_ARN_123:policy/nodes.cluster-api-provider-aws.sigs.k8s.io
-	```
+    ```shell
+    aws iam attach-user-policy --user-name k0rdentUser --policy-arn arn:aws:iam::FAKE_ARN_123:policy/controllers-eks.cluster-api-provider-aws.sigs.k8s.io
+    aws iam attach-user-policy --user-name k0rdentUser --policy-arn arn:aws:iam::FAKE_ARN_123:policy/controllers.cluster-api-provider-aws.sigs.k8s.io
+    aws iam attach-user-policy --user-name k0rdentUser --policy-arn arn:aws:iam::FAKE_ARN_123:policy/control-plane.cluster-api-provider-aws.sigs.k8s.io
+    aws iam attach-user-policy --user-name k0rdentUser --policy-arn arn:aws:iam::FAKE_ARN_123:policy/nodes.cluster-api-provider-aws.sigs.k8s.io
+    ```
 	
 8. Create an access key and secret
 
-	To access AWS as this new user, you'll need to create an access key:
+    To access AWS as this new user, you'll need to create an access key:
 
-	```shell
-	aws iam create-access-key --user-name k0rdentQuickstart 
-	```
-	```console
-	{
-	  "AccessKey": {
-		  "UserName": "k0rdentQuickstart",
-		  "AccessKeyId": "EXAMPLE_ACCESS_KEY_ID",
-		  "Status": "Active",
-		  "SecretAccessKey": "EXAMPLE_SECRET_ACCESS_KEY",
-		  "CreateDate": "2025-01-18T08:33:35+00:00"
-	  }
-	}
-	```
+    ```shell
+    aws iam create-access-key --user-name k0rdentUser 
+    ```
+    ```console
+    {
+      "AccessKey": {
+        "UserName": "k0rdentUser",
+        "AccessKeyId": "EXAMPLE_ACCESS_KEY_ID",
+        "Status": "Active",
+        "SecretAccessKey": "EXAMPLE_SECRET_ACCESS_KEY",
+        "CreateDate": "2025-01-18T08:33:35+00:00"
+      }
+    }
+    ```
 
-9. Create the IAM Credentials Secret on the k0rdent Management Cluster
+9. Create the IAM Credentials `Secret` on the k0rdent Management Cluster
 
-	Create a YAML file called aws-cluster-identity-secret.yaml and add the following text, including the `AccessKeyId` and `SecretAccessKey` you created in the previous step:
+    Create a YAML file called `aws-cluster-identity-secret.yaml` and add the following text, including the `AccessKeyId` and `SecretAccessKey` you created in the previous step:
 
-	```yaml
-	apiVersion: v1
-	kind: Secret
-	metadata:
-	  name: aws-cluster-identity-secret
-	  namespace: kcm-system
-	type: Opaque
-	stringData:
-	  AccessKeyID: EXAMPLE_ACCESS_KEY_ID
-	  SecretAccessKey: EXAMPLE_SECRET_ACCESS_KEY
-	```
+    ```yaml
+    apiVersion: v1
+    kind: Secret
+    metadata:
+      name: aws-cluster-identity-secret
+      namespace: kcm-system
+    type: Opaque
+    stringData:
+      AccessKeyID: EXAMPLE_ACCESS_KEY_ID
+      SecretAccessKey: EXAMPLE_SECRET_ACCESS_KEY
+    ```
 
-	Apply the YAML to your cluster, making sure to add it to the namespace where the CAPA provider is running (currently `kcm-system`) so the controller can read it:
+    Apply the YAML to your cluster, making sure to add it to the namespace where the CAPA provider is running (currently `kcm-system`) so the controller can read it:
 
-	```shell
-	kubectl apply -f aws-cluster-identity-secret.yaml -n kcm-system
-	```
+    ```shell
+    kubectl apply -f aws-cluster-identity-secret.yaml -n kcm-system
+    ```
 
 10. Create the `AWSClusterStaticIdentity`
 
-	Create the `AWSClusterStaticIdentity` object in a file named `aws-cluster-identity.yaml`:
+    Create the `AWSClusterStaticIdentity` object in a file named `aws-cluster-identity.yaml`:
 
-	```shell
-	kind: AWSClusterStaticIdentity
-	metadata:
-	  name: aws-cluster-identity
-	spec:
-	  secretRef: aws-cluster-identity-secret
-	  allowedNamespaces:
-	    selector:
-		  matchLabels: {}
-	```
+    ```shell
+    kind: AWSClusterStaticIdentity
+    metadata:
+      name: aws-cluster-identity
+    spec:
+      secretRef: aws-cluster-identity-secret
+      allowedNamespaces:
+        selector:
+        matchLabels: {}
+    ```
 
-	Notice that the `secretRef` references the `Secret` you created in the previous step.
+    Notice that the `secretRef` references the `Secret` you created in the previous step.
 
-	Apply the YAML to your cluster, again adding it to the `kcm-system` namespace.
+    Apply the YAML to your cluster, again adding it to the `kcm-system` namespace.
 
-	```shell
-	kubectl apply -f aws-cluster-identity.yaml  -n kcm-system
-	```
+    ```shell
+    kubectl apply -f aws-cluster-identity.yaml  -n kcm-system
+    ```
 
 11. Create the `Credential`
 
-	Finally, create the kcm `Credential` object, making sure to reference the `AWSClusterStaticIdentity` you just created:
+    Finally, create the KCM `Credential` object, making sure to reference the `AWSClusterStaticIdentity` you just created:
 
-	```yaml
-	apiVersion: k0rdent.mirantis.com/v1alpha1
-	kind: Credential
-	metadata:
-	  name: aws-cluster-identity-cred
-	  namespace: kcm-system
-	spec:
-	description: "Credential Example"
-	identityRef:
-	  apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
-	  kind: AWSClusterStaticIdentity
-	  name: aws-cluster-identity
-	```
-	Apply the YAML to your cluster, again keeping it in the `kcm-system` namespace:
+    ```yaml
+    apiVersion: k0rdent.mirantis.com/v1alpha1
+    kind: Credential
+    metadata:
+      name: aws-cluster-identity-cred
+      namespace: kcm-system
+    spec:
+    description: "Credential Example"
+    identityRef:
+      apiVersion: infrastructure.cluster.x-k8s.io/v1beta2
+      kind: AWSClusterStaticIdentity
+      name: aws-cluster-identity
+    ```
+    Apply the YAML to your cluster, again keeping it in the `kcm-system` namespace:
 
-	```shell
-	kubectl apply -f aws-cluster-identity-cred.yaml -n kcm-system
-	```
+    ```shell
+    kubectl apply -f aws-cluster-identity-cred.yaml -n kcm-system
+    ```
 
 12. Deploy a cluster
 
-	Make sure everything is configured properly by creating a `ClusterDeployment`. Start with a YAML file specifying the `ClusterDeployment`, as in:
+    Make sure everything is configured properly by creating a `ClusterDeployment`. Start with a YAML file specifying the `ClusterDeployment`, as in:
 
-	```yaml
-	apiVersion: k0rdent.mirantis.com/v1alpha1
-	kind: ClusterDeployment
-	metadata:
-      name: my-aws-clusterdeployment1
-	  namespace: kcm-system
-	spec:
-	  template: aws-standalone-cp-0-0-5
-	  credential: aws-cluster-identity-cred
-    config:
-      clusterLabels: {}
-      region: us-east-2
-      controlPlane:
-        instanceType: t3.small
-      worker:
-        instanceType: t3.small
-	```
-  > NOTE:
-  > - You're giving it an arbitrary name in `.metadata.name` (`my-aws-clusterdeployment1`)
-  > - You're referencing the credential you created in the previous step, `aws-cluster-identity-cred`. This enables you to set up a system where users can take advantage of having access to the credentials to the AWS account without actually having those credentials in hand.
-  > - You need to choose a template to use for the cluster, in this case `aws-standalone-cp-0-0-5`. You can get a list of available templates using:
+    ```yaml
+    apiVersion: k0rdent.mirantis.com/v1alpha1
+    kind: ClusterDeployment
+    metadata:
+        name: my-aws-clusterdeployment1
+      namespace: kcm-system
+    spec:
+      template: aws-standalone-cp-0-1-0
+      credential: aws-cluster-identity-cred
+      config:
+        clusterLabels: {}
+        region: us-east-2
+        controlPlane:
+          instanceType: t3.small
+        worker:
+          instanceType: t3.small
+    ```
+    > NOTE:
+    > - You're giving it an arbitrary name in `.metadata.name` (`my-aws-clusterdeployment1`)
+    > - You're referencing the credential you created in the previous step, `aws-cluster-identity-cred`. This enables you to set up a system where users can take advantage of having access to the credentials to the AWS account without actually having those credentials in hand.
+    > - You need to choose a template to use for the cluster, in this case `aws-standalone-cp-0-1-0`. You can get a list of available templates using:
 
-  ```shell
-  kubectl get clustertemplate -n kcm-system
-  ```
-	```console
-	NAMESPACE    NAME                            VALID
-	kcm-system   adopted-cluster-0-0-2           true
-	kcm-system   aws-eks-0-0-3                   true
-	kcm-system   aws-hosted-cp-0-0-4             true
-	kcm-system   aws-standalone-cp-0-0-5         true
-	kcm-system   azure-aks-0-0-2                 true
-	kcm-system   azure-hosted-cp-0-0-4           true
-	kcm-system   azure-standalone-cp-0-0-5       true
-	kcm-system   openstack-standalone-cp-0-0-2   true
-	kcm-system   vsphere-hosted-cp-0-0-5         true
-	kcm-system   vsphere-standalone-cp-0-0-5     true
-	```
-	Apply the YAML to your management cluster:
-	```shell
-	kubectl apply -f my-aws-clusterdeployment1.yaml
-	```
-	```console
-	clusterdeployment.k0rdent.mirantis.com/my-aws-clusterdeployment1 created
-	```
-  As before, there will be a delay as the cluster finishes provisioning. Follow the provisioning process with:
-	```shell
-	kubectl -n kcm-system get clusterdeployment.k0rdent.mirantis.com my-aws-clusterdeployment1 --watch
-	```
-	```console
-	NAME                        READY   STATUS
-	my-aws-clusterdeployment1   True    ClusterDeployment is ready
-	```
-	When the cluster is `Ready`, you can access it via the kubeconfig, as in:
-	```shell
-	kubectl -n kcm-system get secret my-aws-clusterdeployment1-kubeconfig -o jsonpath='{.data.value}' | base64 -d > my-aws-clusterdeployment1-kubeconfig.kubeconfig
-	KUBECONFIG="my-aws-clusterdeployment1-kubeconfig.kubeconfig" kubectl get pods -A
-	```
-14. Cleanup
+    ```shell
+    kubectl get clustertemplate -n kcm-system
+    ```
+    ```console
+    NAME                            VALID
+    adopted-cluster-0-1-0           true
+    aws-eks-0-1-0                   true
+    aws-hosted-cp-0-1-0             true
+    aws-standalone-cp-0-1-0         true
+    azure-aks-0-1-0                 true
+    azure-hosted-cp-0-1-0           true
+    azure-standalone-cp-0-1-0       true
+    openstack-standalone-cp-0-1-0   true
+    vsphere-hosted-cp-0-1-0         true
+    vsphere-standalone-cp-0-1-0     true
+    ```
+    Apply the YAML to your management cluster:
+    ```shell
+    kubectl apply -f my-aws-clusterdeployment1.yaml
+    ```
+    ```console
+    clusterdeployment.k0rdent.mirantis.com/my-aws-clusterdeployment1 created
+    ```
+    As before, there will be a delay as the cluster finishes provisioning. Follow the provisioning process with:
+    ```shell
+    kubectl -n kcm-system get clusterdeployment.k0rdent.mirantis.com my-aws-clusterdeployment1 --watch
+    ```
+    ```console
+    NAME                        READY   STATUS
+    my-aws-clusterdeployment1   True    ClusterDeployment is ready
+    ```
+    When the cluster is `Ready`, you can access it via the kubeconfig, as in:
+    ```shell
+    kubectl -n kcm-system get secret my-aws-clusterdeployment1-kubeconfig -o jsonpath='{.data.value}' | base64 -d > my-aws-clusterdeployment1-kubeconfig.kubeconfig
+    KUBECONFIG="my-aws-clusterdeployment1-kubeconfig.kubeconfig" kubectl get pods -A
+    ```
 
-  When you've established that it's working properly. you can delete the managed cluster and its AWS objects:
+13. Cleanup
 
-  ```shell
-  kubectl delete ClusterDeployment my-aws-clusterdeployment1 
-  ```
+    When you've established that it's working properly, you can delete the managed cluster and its AWS objects:
+
+    ```shell
+    kubectl delete ClusterDeployment my-aws-clusterdeployment1 
+    ```
 
 ## Azure
 
@@ -322,7 +323,7 @@ Standalone clusters can be deployed on Azure instances. Follow these steps to ma
 
 2. The Azure CLI
 
-    The Azure CLI (az) is required to interact with Azure resources. You can install it on Ubuntu as follows:
+    The Azure CLI (`az`) is required to interact with Azure resources. You can install it on Ubuntu as follows:
 
     ```shell
     curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
@@ -363,12 +364,12 @@ Standalone clusters can be deployed on Azure instances. Follow these steps to ma
 
 5. Find Your Subscription ID
 
-    Creating a managed cluster requires a structure of credentials that link to user identities on the provider system without
+    Creating a child cluster requires a structure of credentials that link to user identities on the provider system without
     exposing the actual username and password to users. You can find more information on [k0rdent 
     Credentials](admin-credentials.md), but for Azure, this involves creating an `AzureClusterIdentity` and a 
     Service Principal (SP) to let CAPZ (Cluster API Azure) communicate with the cloud provider. 
 
-    On Azure, the lowest level of this hierarchy is the subscription, which ties to your billing information Azure.Your Azure must have at least one subscription for you to use it with k0rdent, so if you're working with a new
+    On Azure, the lowest level of this hierarchy is the subscription, which ties to your billing information for Azure. Your Azure user must have at least one subscription for you to use it with k0rdent, so if you're working with a new
     account make sure to [create a new subscription with billing information](https://learn.microsoft.com/en-us/azure/cost-management-billing/manage/create-subscription) before you start.
 
     To get the information you need, list all your Azure subscriptions: 
@@ -400,7 +401,7 @@ Standalone clusters can be deployed on Azure instances. Follow these steps to ma
     "tenant": "SP_TENANT_SP_TENANT"
     }
     ```
-    Note that this information gives you access to your Azure account, so make sure to treat these strings 
+    Note that this information provides access to your Azure account, so make sure to treat these strings 
     like passwords. Do not share them or check them into a repository.
 
 7. Use the password to create a `Secret` object
@@ -495,7 +496,7 @@ Now you're ready to deploy the cluster.
 
 10. Create a `ClusterDeployment`
 
-    To test the configuration, deploy a managed cluster by following these steps:
+    To test the configuration, deploy a child cluster by following these steps:
 
     First get a list of available locations/regions:
 
@@ -510,18 +511,31 @@ Now you're ready to deploy the cluster.
     West US 2                 westus2              (US) West US 2
     West US 3                 westus3              (US) West US 3
     Australia East            australiaeast        (Asia Pacific) Australia East
-    …
+    . . .
     ```
 
     Make note of the location you want to use, such as `eastus`.
 
-    To create the actual managed cluster, create a `ClusterDeployment` that references the appropriate template
+    To create the actual child cluster, create a `ClusterDeployment` that references the appropriate template
     as well as the location, credentials, and `subscriptionId`.
 
     You can see the available templates by listing them:
 
     ```shell
     kubectl get clustertemplate -n kcm-system
+    ```
+    ```console
+    NAME                            VALID
+    adopted-cluster-0-1-0           true
+    aws-eks-0-1-0                   true
+    aws-hosted-cp-0-1-0             true
+    aws-standalone-cp-0-1-0         true
+    azure-aks-0-1-0                 true
+    azure-hosted-cp-0-1-0           true
+    azure-standalone-cp-0-1-0       true
+    openstack-standalone-cp-0-1-0   true
+    vsphere-hosted-cp-0-1-0         true
+    vsphere-standalone-cp-0-1-0     true
     ```
 
     Create the yaml:
@@ -533,7 +547,7 @@ Now you're ready to deploy the cluster.
       name: my-azure-clusterdeployment1
       namespace: kcm-system
     spec:
-      template: azure-standalone-cp-0-0-5
+      template: azure-standalone-cp-0-1-0
       credential: azure-cluster-identity-cred
       config:
         location: "westus" # Select your desired Azure Location (find it via `az account list-locations -o table`)
@@ -572,7 +586,7 @@ Now you're ready to deploy the cluster.
 
 11. Cleanup
 
-    To clean up Azure resources, delete the managed cluster by deleting the `ClusterDeployment`:
+    To clean up Azure resources, delete the child cluster by deleting the `ClusterDeployment`:
 
     ```shell
     kubectl get ClusterDeployments -A
@@ -590,7 +604,7 @@ Now you're ready to deploy the cluster.
 
 ## OpenStack
 
-k0rdent is able to deploy managed clusters on OpenStack virtual machines. Follow these steps to make it possible to deploy to OpenStack:
+k0rdent is able to deploy child clusters on OpenStack virtual machines. Follow these steps to make it possible to deploy to OpenStack:
 
 1. Install k0rdent
 
@@ -615,8 +629,7 @@ k0rdent is able to deploy managed clusters on OpenStack virtual machines. Follow
     OS_AUTH_TYPE (e.g. v3applicationcredential)
     ```
 
-    While it's possible to use a username and password instead of the Application Credential &mdash; adjust your YAML accordingly &mdash; an 
-    Application Credential is strongly recommended because it limits scope and improves security over a raw username/password approach.
+    While it's possible to use a username and password instead of the Application Credential &mdash; adjust your YAML accordingly &mdash; an Application Credential is strongly recommended because it limits scope and improves security over a raw username/password approach.
 
 4. Create the OpenStack Credentials Secret
 
@@ -676,29 +689,29 @@ k0rdent is able to deploy managed clusters on OpenStack virtual machines. Follow
     ```
 
     Note that `.spec.identityRef.name` must match the `Secret` you created in the previous step, and 
-    `.spec.identityRef.namespace` must be the same as the `Secret`’s namespace (`kcm-system`).
+    `.spec.identityRef.namespace` must be the same as the one that includes the `Secret` (`kcm-system`).
 
-6. Create Your First Managed Cluster
+6. Create Your First Child Cluster
 
     To test the configuration, create a YAML file with the specification of your Managed Cluster and save it as
     `my-openstack-cluster-deployment.yaml`.  Note that you can see the available templates by listing them:
 
     ```shell
-	kubectl get clustertemplate -n kcm-system
-	```
-	```console
-	NAMESPACE    NAME                            VALID
-	kcm-system   adopted-cluster-0-0-2           true
-	kcm-system   aws-eks-0-0-3                   true
-	kcm-system   aws-hosted-cp-0-0-4             true
-	kcm-system   aws-standalone-cp-0-0-5         true
-	kcm-system   azure-aks-0-0-2                 true
-	kcm-system   azure-hosted-cp-0-0-4           true
-	kcm-system   azure-standalone-cp-0-0-5       true
-	kcm-system   openstack-standalone-cp-0-0-2   true
-	kcm-system   vsphere-hosted-cp-0-0-5         true
-	kcm-system   vsphere-standalone-cp-0-0-5     true
-	```
+    kubectl get clustertemplate -n kcm-system
+    ```
+    ```console
+    NAME                            VALID
+    adopted-cluster-0-1-0           true
+    aws-eks-0-1-0                   true
+    aws-hosted-cp-0-1-0             true
+    aws-standalone-cp-0-1-0         true
+    azure-aks-0-1-0                 true
+    azure-hosted-cp-0-1-0           true
+    azure-standalone-cp-0-1-0       true
+    openstack-standalone-cp-0-1-0   true
+    vsphere-hosted-cp-0-1-0         true
+    vsphere-standalone-cp-0-1-0     true
+    ```
 
     The `ClusterDeployment` should look something like this:
 
@@ -709,7 +722,7 @@ k0rdent is able to deploy managed clusters on OpenStack virtual machines. Follow
       name: my-openstack-cluster-deployment
       namespace: kcm-system
     spec:
-      template: openstack-standalone-cp-0-0-1
+      template: openstack-standalone-cp-0-1-0
       credential: openstack-cluster-identity-cred
       config:
         controlPlaneNumber: 1
@@ -766,10 +779,9 @@ k0rdent is able to deploy managed clusters on OpenStack virtual machines. Follow
     clusterdeployment.k0rdent.mirantis.com "my-openstack-cluster-deployment" deleted
     ```
 
-
 ## vSphere
 
-To enable users to deploy managed clusers on vSphere, follow these steps:
+To enable users to deploy child clusers on vSphere, follow these steps:
 
 1. Create a k0rdent management cluster
 
@@ -819,9 +831,9 @@ To enable users to deploy managed clusers on vSphere, follow these steps:
 
 6. vSphere Credentials
 
-    To enable k0rdent to access vSphere resources, create the appropriate credentials objects. For a full explanation of how Credentials work, see the [main Credentials chapter](admin-credentials.md) but for now, follow these steps:
+    To enable k0rdent to access vSphere resources, create the appropriate credentials objects. For a full explanation of how `Credential` objects work, see the [main Credentials chapter](admin-credentials.md), but for now, follow these steps:
 
-    Create a `Secret` Object with the username and password
+    Create a `Secret` object with the username and password
 
     The `Secret` stores the username and password for your vSphere instance. Save the `Secret` YAML in a file named `vsphere-cluster-identity-secret.yaml`:
 
@@ -906,20 +918,20 @@ To enable users to deploy managed clusers on vSphere, follow these steps:
     kubectl get clustertemplate -n kcm-system
     ```
     ```console
-    NAMESPACE    NAME                            VALID
-    kcm-system   adopted-cluster-0-0-2           true
-    kcm-system   aws-eks-0-0-3                   true
-    kcm-system   aws-hosted-cp-0-0-4             true
-    kcm-system   aws-standalone-cp-0-0-5         true
-    kcm-system   azure-aks-0-0-2                 true
-    kcm-system   azure-hosted-cp-0-0-4           true
-    kcm-system   azure-standalone-cp-0-0-5       true
-    kcm-system   openstack-standalone-cp-0-0-2   true
-    kcm-system   vsphere-hosted-cp-0-0-5         true
-    kcm-system   vsphere-standalone-cp-0-0-5     true
+    NAME                            VALID
+    adopted-cluster-0-1-0           true
+    aws-eks-0-1-0                   true
+    aws-hosted-cp-0-1-0             true
+    aws-standalone-cp-0-1-0         true
+    azure-aks-0-1-0                 true
+    azure-hosted-cp-0-1-0           true
+    azure-standalone-cp-0-1-0       true
+    openstack-standalone-cp-0-1-0   true
+    vsphere-hosted-cp-0-1-0         true
+    vsphere-standalone-cp-0-1-0     true
     ```
 
-    The `ClusterDeployment` YAML file should look something like this. Make sure the replace the placeholders with your
+    The `ClusterDeployment` YAML file should look something like this. Make sure to replace the placeholders with your
     specific information:
 
     ```yaml
@@ -929,7 +941,7 @@ To enable users to deploy managed clusers on vSphere, follow these steps:
       name: my-vsphere-clusterdeployment1
       namespace: kcm-system
     spec:
-      template: vsphere-standalone-cp-0-0-5
+      template: vsphere-standalone-cp-0-1-0
       credential: vsphere-cluster-identity-cred
       config:
         vsphere:
