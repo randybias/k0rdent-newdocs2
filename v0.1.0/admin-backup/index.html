@@ -993,6 +993,48 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#customization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Customization
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Customization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#velero-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Velero installation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schedule-expression-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schedule Expression Format
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#putting-extra-objects-in-a-management-backup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Putting Extra Objects in a Management Backup
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1728,6 +1770,48 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#customization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Customization
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Customization">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#velero-installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Velero installation
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schedule-expression-format" class="md-nav__link">
+    <span class="md-ellipsis">
+      Schedule Expression Format
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#putting-extra-objects-in-a-management-backup" class="md-nav__link">
+    <span class="md-ellipsis">
+      Putting Extra Objects in a Management Backup
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -1764,14 +1848,14 @@ different cloud storage options while maintaining the integrity of critical reso
   into an offsite location.</li>
 <li><strong>Restore:</strong> The ability to create configuration objects from a specific Management Backup in order to create a management
   cluster in the same state that existed at the time of backup without (re)provisioning of cloud resources.</li>
-<li><strong>Disaster Recovery:</strong> The ability to restore k0rdent on another management cluster, plus ensuring that clusters are not 
+<li><strong>Disaster Recovery:</strong> The ability to restore k0rdent on another management cluster, plus ensuring that clusters are not
   recreated or lost.</li>
 <li><strong>Rollback:</strong> The possibility to manually restore after a specific event, such as a failed k0rdent upgrade</li>
 </ul>
 <h2 id="velero-as-provider-for-management-backups">Velero as Provider for Management Backups<a class="headerlink" href="#velero-as-provider-for-management-backups" title="Permanent link">#</a></h2>
 <p><a href="https://velero.io/"><code>Velero</code></a> is an open-source tool that simplifies backing up and restoring clusters as well as individual resources. It seamlessly integrates into the k0rdent management environment to provide robust disaster recovery capabilities.</p>
 <p>The <code>velero</code> instance is part of the Helm chart that installs k0rdent, which means that it
-can be customized if necessary. (You can find information on customizing Velero <a href="#customization">below</a>)</p>
+can be <a href="#velero-installation">customized</a> if necessary.</p>
 <p>k0rdent manages the schedule and is responsible for collecting data to be included in a backup.</p>
 <h2 id="scheduled-management-backups">Scheduled Management Backups<a class="headerlink" href="#scheduled-management-backups" title="Permanent link">#</a></h2>
 <p>Backups should be scheduled on a regular basis, depending on how often information changes.</p>
@@ -1780,8 +1864,8 @@ can be customized if necessary. (You can find information on customizing Velero 
 <ol>
 <li>
 <p>If no <code>velero</code> plugins have been installed as suggested
-     in the <a href="#customization">corresponding section</a>,
-     install it by modifying the <code>Management</code> object:</p>
+   in the <a href="#velero-installation">corresponding section</a>,
+   install it by modifying the <code>Management</code> object:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">k0rdent.mirantis.com/v1alpha1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Management</span>
 <span class="nt">metadata</span><span class="p">:</span>
@@ -1807,8 +1891,8 @@ can be customized if necessary. (You can find information on customizing Velero 
 </li>
 <li>
 <p>Create a <a href="https://velero.io/docs/v1.15/api-types/backupstoragelocation/"><code>BackupStorageLocation</code></a>
-    object referencing a <code>Secret</code> with credentials to access the cloud storage
-    (if the multiple credentials feature is supported by the plugin).</p>
+   object referencing a <code>Secret</code> with credentials to access the cloud storage
+   (if the multiple credentials feature is supported by the plugin).</p>
 <p>For example, if you are using Amazon S3, your <code>BackupStorageLocation</code> and the related <code>Secret</code> might look like this:</p>
 <div class="highlight"><pre><span></span><code><span class="nn">---</span>
 <span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
@@ -1817,7 +1901,7 @@ can be customized if necessary. (You can find information on customizing Velero 
 <span class="w">  </span><span class="c1"># [default]</span>
 <span class="w">  </span><span class="c1"># aws_access_key_id = EXAMPLE_ACCESS_KEY_ID</span>
 <span class="w">  </span><span class="c1"># aws_secret_access_key = EXAMPLE_SECRET_ACCESS_KEY</span>
-<span class="w">       </span><span class="nt">cloud</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">W2RlZmF1bHRdCmF3c19hY2Nlc3Nfa2V5X2lkID0XXXXXXXXXXXXXXXXXXXXyZXRfYWNjZXNzX2tleSA9IEVYQU1QTEVfU0VDUkVUX0FDQ0VTU19LRVkKICA=</span>
+<span class="w">  </span><span class="nt">cloud</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">WW2RlZmF1bHRdCmF3c19hY2Nlc3Nfa2V5X2lkID0gRVhBTVBMRV9BQ0NFU1NfS0VZX0lECmF3c19zZWNyZXRfYWNjZXNzX2tleSA9IEVYQU1QTEVfU0VDUkVUX0FDQ0VTU19LRVkKICA=</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Secret</span>
 <span class="nt">metadata</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">cloud-credentials</span>
@@ -1846,8 +1930,8 @@ can be customized if necessary. (You can find information on customizing Velero 
 <p>You can get more information on how to build these objects at the <a href="https://velero.io/docs/v1.15/locations">official Velero documentation</a>.</p>
 <h3 id="create-a-management-backup">Create a Management Backup<a class="headerlink" href="#create-a-management-backup" title="Permanent link">#</a></h3>
 <p>Periodic backups are handled by a <code>ManagementBackup</code> object, which uses a <a href="https://en.wikipedia.org/wiki/Cron">Cron</a> expression
-for its <code>.spec.schedule</code> field. 
-If you don't set the <code>.spec.schedule</code> field, Velero will instead work with  <a href="#management-backup-on-demand">backup on demand</a>.</p>
+for its <code>.spec.schedule</code> field.
+If the <code>.spec.schedule</code> field is not set, a <a href="#management-backup-on-demand">backup on demand</a> will be created instead.</p>
 <p>Optionally, set the name of the <code>BackupStorageLocation</code> <code>.spec.backup.storageLocation</code>.
 The default location is the <code>BackupStorageLocation</code> object with <code>.spec.default</code> set to <code>true</code>.</p>
 <p>For example, you can create a <code>ManagementBackup</code> object that backs up to the storage object created in the previous step
@@ -1888,14 +1972,18 @@ k0rdent.mirantis.com/component=&quot;kcm&quot;
 <h2 id="restoration">Restoration<a class="headerlink" href="#restoration" title="Permanent link">#</a></h2>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Please refer to the
+<p>
+Please refer to the
 <a href="https://velero.io/docs/v1.15/migration-case/#before-migrating-your-cluster">official migration documentation</a>
 to familiarize yourself with potential limitations of the Velero backup system.</p>
 </div>
 <p>In the event of disaster, you can restore from a backup by doing the following:</p>
 <ol>
 <li>
-<p>Create a clean k0rdent installation, including <code>velero</code> and <a href="#customization">its plugins</a>. Specifically, you want to <strong>avoid</strong> creating a <code>Management</code> object and similar objects because they will be part of your restored cluster. You can remove these objects after installation, but you can also install k0rdent without them in the first place:</p>
+<p>Create a clean k0rdent installation, including <code>velero</code> and <a href="#velero-installation">its plugins</a>.
+   Specifically, you want to <strong>avoid</strong> creating a <code>Management</code> object and similar objects because they
+   will be part of your restored cluster. You can remove these objects after installation, but you
+   can also install k0rdent without them in the first place:</p>
 <div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>kcm<span class="w"> </span>oci://ghcr.io/k0rdent/kcm/charts/kcm<span class="w"> </span><span class="se">\</span>
 <span class="w"> </span>--version<span class="w"> </span>&lt;version&gt;<span class="w"> </span><span class="se">\</span>
 <span class="w"> </span>--create-namespace<span class="w"> </span><span class="se">\</span>
@@ -1911,10 +1999,12 @@ to familiarize yourself with potential limitations of the Velero backup system.<
 </code></pre></div>
 </li>
 <li>
-<p>Create the <code>BackupStorageLocation</code>/<code>Secret</code> objects that were created during the <a href="#preparation">preparation stage</a> of creating a backup (preferably the same depending on a plugin).</p>
+<p>Create the <code>BackupStorageLocation</code>/<code>Secret</code> objects that were created during the <a href="#preparation">preparation stage</a>
+   of creating a backup (preferably the same depending on a plugin).</p>
 </li>
 <li>
-<p>Restore the <code>kcm</code> system creating the <a href="https://velero.io/docs/v1.15/api-types/restore/"><code>Restore</code></a> object. Note that it is important to set the <code>.spec.existingResourcePolicy</code> field value to <code>update</code>:</p>
+<p>Restore the <code>kcm</code> system creating the <a href="https://velero.io/docs/v1.15/api-types/restore/"><code>Restore</code></a> object.
+   Note that it is important to set the <code>.spec.existingResourcePolicy</code> field value to <code>update</code>:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">velero.io/v1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Restore</span>
 <span class="nt">metadata</span><span class="p">:</span>
@@ -2031,7 +2121,8 @@ to simplify querying if required.</p>
 should be performed to restore the <code>kcm</code> to its before-the-upgrade state:</p>
 <ol>
 <li>
-<p>Follow the first 2 steps from the <a href="#restoration">restoration section</a>, creating a clean <code>kcm</code> installation and <code>BackupStorageLocation</code>/<code>Secret</code>.</p>
+<p>Follow the first 2 steps from the <a href="#restoration">restoration section</a>, creating a clean <code>kcm</code>
+   installation and <code>BackupStorageLocation</code>/<code>Secret</code>.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>
@@ -2040,9 +2131,9 @@ Please consider the <a href="#caveats">restoration caveats</a> section before pr
 </li>
 <li>
 <p>Create the <code>ConfigMap</code> object with patches to revert the <code>Management</code>
-    <code>.spec.release</code>, substitute the <code>&lt;version-before-upgrade&gt;</code> with
-    the version of <code>kcm</code> before the upgrade, and create the <code>Restore</code> object,
-    propagating the <code>ConfigMap</code> to it:</p>
+   <code>.spec.release</code>, substitute the <code>&lt;version-before-upgrade&gt;</code> with
+   the version of <code>kcm</code> before the upgrade, and create the <code>Restore</code> object,
+   propagating the <code>ConfigMap</code> to it:</p>
 <div class="highlight"><pre><span></span><code><span class="nn">---</span>
 <span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">v1</span>
 <span class="nt">data</span><span class="p">:</span>
@@ -2083,7 +2174,9 @@ Please consider the <a href="#caveats">restoration caveats</a> section before pr
 <h2 id="caveats-limitations">Caveats / Limitations<a class="headerlink" href="#caveats-limitations" title="Permanent link">#</a></h2>
 <p>The credentials stored in backups can and will get stale,
 so a proper rotation should be considered beforehand.</p>
-<p>All <code>velero</code> caveats and limitations are transitively implied in <code>k0rdent</code>. In particular, that means no backup encryption is provided until it is implemented by a <code>velero</code> plugin that supports encryption and cloud storage backups.</p>
+<p>All <code>velero</code> caveats and limitations are transitively implied in <code>k0rdent</code>. In particular, that
+means no backup encryption is provided until it is implemented by a <code>velero</code> plugin that supports
+encryption and cloud storage backups.</p>
 <h2 id="velero-backups-restores-deletion">Velero Backups / Restores deletion<a class="headerlink" href="#velero-backups-restores-deletion" title="Permanent link">#</a></h2>
 <h3 id="delete-restores">Delete Restores<a class="headerlink" href="#delete-restores" title="Permanent link">#</a></h3>
 <p>To delete a <code>velero</code> <code>Restore</code> from the management cluster
@@ -2132,9 +2225,9 @@ the management cluster and from the cloud storage.</p>
 <p>Optionally, delete the created <code>DeleteBackupRequest</code> object
 from the cluster after <code>Backup</code> has been deleted.</p>
 <p>For reference, follow the <a href="https://velero.io/docs/v1.15/backup-reference/#deleting-backups">official documentation</a>.</p>
-<h1 id="customization">Customization<a class="headerlink" href="#customization" title="Permanent link">#</a></h1>
+<h2 id="customization">Customization<a class="headerlink" href="#customization" title="Permanent link">#</a></h2>
 <p>This section covers different topics of customization regarding backing up and restoring k0rdent.</p>
-<h2 id="velero-installation">Velero installation<a class="headerlink" href="#velero-installation" title="Permanent link">#</a></h2>
+<h3 id="velero-installation">Velero installation<a class="headerlink" href="#velero-installation" title="Permanent link">#</a></h3>
 <p>The Velero helm chart is supplied with the
 <a href="https://vmware-tanzu.github.io/helm-charts/">k0rdent helm chart</a>
 and is enabled by default. There are 2 ways of customizing the chart values:</p>
@@ -2148,7 +2241,7 @@ Only a plugin is required during restoration; the other parameters
 are optional.</p>
 </div>
 <p>For example, this command installs k0rdent via <code>helm install</code> with a configured plugin, <code>BackupStorageLocation</code>
-and propagated credentials:
+and propagated credentials:</p>
 <div class="highlight"><pre><span></span><code>helm<span class="w"> </span>install<span class="w"> </span>kcm<span class="w"> </span>oci://ghcr.io/k0rdent/kcm/charts/kcm<span class="w"> </span><span class="se">\</span>
 <span class="w"> </span>--version<span class="w"> </span>&lt;version&gt;<span class="w"> </span><span class="se">\</span>
 <span class="w"> </span>--create-namespace<span class="w"> </span><span class="se">\</span>
@@ -2164,14 +2257,17 @@ and propagated credentials:
 <span class="w"> </span>--set<span class="w"> </span>velero.initContainers<span class="o">[</span><span class="m">0</span><span class="o">]</span>.image<span class="o">=</span>velero/velero-plugin-for-&lt;provider-name&gt;:&lt;provider-plugin-tag&gt;<span class="w"> </span><span class="se">\</span>
 <span class="w"> </span>--set<span class="w"> </span>velero.initContainers<span class="o">[</span><span class="m">0</span><span class="o">]</span>.volumeMounts<span class="o">[</span><span class="m">0</span><span class="o">]</span>.mountPath<span class="o">=</span>/target<span class="w"> </span><span class="se">\</span>
 <span class="w"> </span>--set<span class="w"> </span>velero.initContainers<span class="o">[</span><span class="m">0</span><span class="o">]</span>.volumeMounts<span class="o">[</span><span class="m">0</span><span class="o">]</span>.name<span class="o">=</span>plugins
-</code></pre></div></p>
+</code></pre></div>
 </li>
 <li>
-<p>Create or modify the existing <code>Management</code> object in the <code>.spec.config.kcm</code>.
-    &gt; NOTE:
-    &gt; Only a plugin is required during restoration; the other parameters
-    &gt; are optional.</p>
-<p>For example, this is a <code>Management</code> object with a configured plugin and enabled metrics:
+<p>Create or modify the existing <code>Management</code> object in the <code>.spec.config.kcm</code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>
+Only a plugin is required during restoration; the other parameters
+are optional.</p>
+</div>
+<p>For example, this is a <code>Management</code> object with a configured plugin and enabled metrics:</p>
 <div class="highlight"><pre><span></span><code><span class="nt">apiVersion</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">k0rdent.mirantis.com/v1alpha1</span>
 <span class="nt">kind</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">Management</span>
 <span class="nt">metadata</span><span class="p">:</span>
@@ -2192,11 +2288,11 @@ and propagated credentials:
 <span class="w">          </span><span class="nt">metrics</span><span class="p">:</span>
 <span class="w">            </span><span class="nt">enabled</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">true</span>
 <span class="w">  </span><span class="c1"># ...</span>
-</code></pre></div></p>
+</code></pre></div>
 </li>
 </ol>
 <p>To fully disable <code>velero</code>, set the <code>velero.enabled</code> parameter to <code>false</code>.</p>
-<h2 id="schedule-expression-format">Schedule Expression Format<a class="headerlink" href="#schedule-expression-format" title="Permanent link">#</a></h2>
+<h3 id="schedule-expression-format">Schedule Expression Format<a class="headerlink" href="#schedule-expression-format" title="Permanent link">#</a></h3>
 <p>The <code>ManagementBackup</code> <code>.spec.schedule</code> field accepts a correct
 <a href="https://en.wikipedia.org/wiki/Cron">Cron</a> expression,
 along with the
@@ -2209,7 +2305,7 @@ and an extra definition <code>@every</code> with a number and a valid time unit
 <li><code>@hourly</code> (nonstandard predefined definition)</li>
 <li><code>@every 1h</code> (extra definition)</li>
 </ul>
-<h2 id="putting-extra-objects-in-a-management-backup">Putting Extra Objects in a Management Backup<a class="headerlink" href="#putting-extra-objects-in-a-management-backup" title="Permanent link">#</a></h2>
+<h3 id="putting-extra-objects-in-a-management-backup">Putting Extra Objects in a Management Backup<a class="headerlink" href="#putting-extra-objects-in-a-management-backup" title="Permanent link">#</a></h3>
 <p>If you need to back up objects other than those <a href="./#whats-included-in-the-management-backup">backed up by default</a>,
 you can add the label <code>k0rdent.mirantis.com/component="kcm"</code> to these objects.</p>
 <p>All objects containing the label will be automatically added to the management backup.</p>
